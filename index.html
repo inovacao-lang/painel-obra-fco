@@ -807,7 +807,7 @@ function renderPainel(){
 
   aplicarSemaforo('kpiDiasRestantes', 'kpiCardDias',
     ind.diasRestantes === null ? '' : (ind.diasRestantes < 0 ? 'alerta' : (ind.diasRestantes <= 7 ? 'atencao' : 'bom')));
-  aplicarSemaforo('kpiAtividadesAtraso', 'kpiCardAtraso', ind.statusCounts['Atrasado'] > 0 ? 'alerta' : 'bom');
+  aplicarSemaforo('kpiAtividadesAtraso', 'kpiCardAtraso', 'alerta');
 
   const total = ind.linhas.length;
   document.getElementById('statusTitulo').textContent = `Status das Atividades (Cronograma) — ${total} no total`;
