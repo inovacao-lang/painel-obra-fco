@@ -313,6 +313,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
     <button class="tab-btn active" data-tab="painel">Painel</button>
     <button class="tab-btn" data-tab="cronograma">Cronograma</button>
     <button class="tab-btn" data-tab="diario">Diário da Obra</button>
+    <button class="tab-btn" data-tab="checklist">Check-list Mudança</button>
   </nav>
 
   <!-- ===================== ABA: PAINEL (Dashboard) ===================== -->
@@ -592,6 +593,81 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
     </div>
   </div>
 
+  <!-- ===================== ABA: CHECK-LIST MUDANÇA ===================== -->
+  <div class="tab-panel" id="tab-checklist">
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Check-list Mudança</h2>
+        <button class="btn btn-primary btn-sm" id="btnNovoChecklist">+ Nova Ação</button>
+      </div>
+
+      <form class="form-card hidden" id="formChecklist">
+        <input type="hidden" id="clId">
+        <div class="form-grid">
+          <div class="field span-2">
+            <label for="clAcao">Ação Detalhada</label>
+            <input type="text" id="clAcao" required placeholder="Ex.: Transferir link de internet para a nova unidade">
+          </div>
+          <div class="field">
+            <label for="clSetor">Setor</label>
+            <input type="text" id="clSetor" placeholder="Ex.: TI">
+          </div>
+          <div class="field">
+            <label for="clResponsavel">Responsável</label>
+            <input type="text" id="clResponsavel">
+          </div>
+          <div class="field">
+            <label for="clPrazo">Prazo</label>
+            <input type="date" id="clPrazo">
+          </div>
+          <div class="field">
+            <label for="clStatus">Status</label>
+            <select id="clStatus">
+              <option value="Pendente">Pendente</option>
+              <option value="Em andamento">Em andamento</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label for="clObservacao">Observação</label>
+            <textarea id="clObservacao"></textarea>
+          </div>
+        </div>
+        <div class="actions-row">
+          <button type="submit" class="btn btn-primary" id="btnSalvarChecklist">Salvar ação</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelarChecklist">Cancelar</button>
+        </div>
+      </form>
+
+      <div class="filters-row">
+        <div class="field">
+          <label for="filtroChecklistSetor">Setor</label>
+          <select id="filtroChecklistSetor"><option value="">Todos os Setores</option></select>
+        </div>
+        <div class="field">
+          <label for="filtroChecklistStatus">Status</label>
+          <select id="filtroChecklistStatus">
+            <option value="">Todos os Status</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Concluído">Concluído</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ação Detalhada</th><th>Setor</th><th>Responsável</th><th>Prazo</th><th>Status</th><th>Observação</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpoChecklist"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <footer class="app-footer">
@@ -617,8 +693,10 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
 let projeto = null;
 let cronograma = [];
 let diario = [];
+let checklist = [];
 let cronoSort = { key: 'ordem', dir: 'asc' };
 let cronoFiltro = { etapa: '', responsavel: '', status: '' };
+let checklistFiltro = { setor: '', status: '' };
 
 /* ============================== UTILITÁRIOS ============================== */
 function esc(str){
@@ -686,6 +764,11 @@ const STATUS_INFO = {
   'Em andamento':['badge-andamento', '#0063F2'],
   'Atrasado':    ['badge-atrasado', '#A10A37'],
   'Não iniciado':['badge-naoiniciado', '#6B675E'],
+};
+const CHECKLIST_STATUS_INFO = {
+  'Concluído':    'badge-concluido',
+  'Em andamento': 'badge-andamento',
+  'Pendente':     'badge-naoiniciado',
 };
 
 function calcIndicadores(){
@@ -765,6 +848,20 @@ function atualizarSetasOrdenacao(){
     const key = span.dataset.key;
     span.textContent = key === cronoSort.key ? (cronoSort.dir === 'asc' ? '▲' : '▼') : '';
   });
+}
+
+function popularFiltrosChecklist(){
+  const selSetor = document.getElementById('filtroChecklistSetor');
+  const setores = [...new Set(checklist.map(r => r.setor).filter(Boolean))];
+  const curSetor = selSetor.value;
+  selSetor.innerHTML = '<option value="">Todos os Setores</option>' + setores.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  selSetor.value = setores.includes(curSetor) ? curSetor : '';
+}
+function aplicarFiltrosChecklist(){
+  return checklist.filter(r =>
+    (!checklistFiltro.setor || r.setor === checklistFiltro.setor) &&
+    (!checklistFiltro.status || r.status === checklistFiltro.status)
+  );
 }
 
 function aplicarFiltrosDiario(){
@@ -1001,11 +1098,42 @@ function renderDiario(){
   });
 }
 
+function renderChecklist(){
+  popularFiltrosChecklist();
+  const corpo = document.getElementById('corpoChecklist');
+  const filtrados = aplicarFiltrosChecklist();
+  corpo.innerHTML = '';
+  if (!filtrados.length){
+    corpo.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma ação cadastrada ainda.</td></tr>`;
+    return;
+  }
+  const hoje = hojeISO();
+  filtrados.forEach(r => {
+    const classe = CHECKLIST_STATUS_INFO[r.status] || 'badge-naoiniciado';
+    const atrasado = r.prazo && r.status !== 'Concluído' && parseISO(r.prazo) < hoje;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(r.acao_detalhada)}</td>
+      <td>${esc(r.setor) || '—'}</td>
+      <td>${esc(r.responsavel) || '—'}</td>
+      <td class="${atrasado ? 'atraso-pos' : ''}">${formatDateBR(r.prazo)}</td>
+      <td><span class="badge ${classe}">${esc(r.status)}</span></td>
+      <td>${esc(r.observacao) || '—'}</td>
+      <td class="row-actions">
+        <button class="btn btn-secondary btn-sm" data-editar-checklist="${r.id}">Editar</button>
+        <button class="btn btn-danger btn-sm" data-excluir-checklist="${r.id}">Excluir</button>
+      </td>
+    `;
+    corpo.appendChild(tr);
+  });
+}
+
 function renderFooter(){
   const datas = [];
   if (projeto?.updated_at) datas.push(new Date(projeto.updated_at));
   cronograma.forEach(r => { if (r.updated_at) datas.push(new Date(r.updated_at)); });
   diario.forEach(r => { if (r.created_at) datas.push(new Date(r.created_at)); });
+  checklist.forEach(r => { if (r.updated_at) datas.push(new Date(r.updated_at)); });
   const ultima = datas.length ? new Date(Math.max(...datas)) : null;
   document.getElementById('footerUltimaAtualizacao').textContent = ultima ? ultima.toLocaleString('pt-BR') : '—';
 }
@@ -1013,21 +1141,25 @@ function renderFooter(){
 /* ============================== CARREGAMENTO ============================== */
 async function carregarTudo(){
   try{
-    const [{data: proj, error: e1}, {data: cron, error: e2}, {data: dia, error: e3}] = await Promise.all([
+    const [{data: proj, error: e1}, {data: cron, error: e2}, {data: dia, error: e3}, {data: check, error: e4}] = await Promise.all([
       supabaseClient.from('projeto').select('*').eq('id', 1).single(),
       supabaseClient.from('cronograma').select('*').order('ordem', {ascending:true}).order('created_at', {ascending:true}),
       supabaseClient.from('diario').select('*').order('data', {ascending:false}).order('created_at', {ascending:false}),
+      supabaseClient.from('checklist_mudanca').select('*').order('ordem', {ascending:true}).order('created_at', {ascending:true}),
     ]);
     if (e1) throw e1;
     if (e2) throw e2;
     if (e3) throw e3;
+    if (e4) throw e4;
     projeto = proj;
     cronograma = cron || [];
     diario = dia || [];
+    checklist = check || [];
     renderProjeto();
     renderPainel();
     renderCronograma();
     renderDiario();
+    renderChecklist();
     renderFooter();
   } catch(err){
     console.error(err);
@@ -1227,6 +1359,66 @@ document.getElementById('listaDiario').addEventListener('click', async (e) => {
   document.getElementById(id).addEventListener('input', renderDiario);
   document.getElementById(id).addEventListener('change', renderDiario);
 });
+
+/* ========================== FORM: CHECK-LIST MUDANÇA ========================== */
+const formChecklist = document.getElementById('formChecklist');
+function abrirFormChecklist(row){
+  document.getElementById('clId').value = row?.id || '';
+  document.getElementById('clAcao').value = row?.acao_detalhada || '';
+  document.getElementById('clSetor').value = row?.setor || '';
+  document.getElementById('clResponsavel').value = row?.responsavel || '';
+  document.getElementById('clPrazo').value = row?.prazo || '';
+  document.getElementById('clStatus').value = row?.status || 'Pendente';
+  document.getElementById('clObservacao').value = row?.observacao || '';
+  document.getElementById('btnSalvarChecklist').textContent = row ? 'Salvar alterações' : 'Salvar ação';
+  formChecklist.classList.remove('hidden');
+  formChecklist.scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('btnNovoChecklist').addEventListener('click', () => abrirFormChecklist(null));
+document.getElementById('btnCancelarChecklist').addEventListener('click', () => formChecklist.classList.add('hidden'));
+
+formChecklist.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('clId').value;
+  const payload = {
+    acao_detalhada: document.getElementById('clAcao').value.trim(),
+    setor: document.getElementById('clSetor').value.trim() || null,
+    responsavel: document.getElementById('clResponsavel').value.trim() || null,
+    prazo: document.getElementById('clPrazo').value || null,
+    status: document.getElementById('clStatus').value,
+    observacao: document.getElementById('clObservacao').value.trim() || null,
+  };
+  let error;
+  if (id){
+    payload.updated_at = new Date().toISOString();
+    ({ error } = await supabaseClient.from('checklist_mudanca').update(payload).eq('id', id));
+  } else {
+    payload.ordem = checklist.length ? Math.max(...checklist.map(r => r.ordem || 0)) + 1 : 1;
+    ({ error } = await supabaseClient.from('checklist_mudanca').insert(payload));
+  }
+  if (error){ mostrarToast('Erro ao salvar ação: ' + error.message, true); return; }
+  formChecklist.classList.add('hidden');
+  mostrarToast(id ? 'Ação atualizada.' : 'Ação adicionada.');
+  await carregarTudo();
+});
+
+document.getElementById('corpoChecklist').addEventListener('click', async (e) => {
+  const editId = e.target.dataset.editarChecklist;
+  const delId = e.target.dataset.excluirChecklist;
+  if (editId){
+    const row = checklist.find(r => r.id === editId);
+    if (row) abrirFormChecklist(row);
+  } else if (delId){
+    if (!confirm('Excluir esta ação do check-list?')) return;
+    const { error } = await supabaseClient.from('checklist_mudanca').delete().eq('id', delId);
+    if (error){ mostrarToast('Erro ao excluir: ' + error.message, true); return; }
+    mostrarToast('Ação excluída.');
+    await carregarTudo();
+  }
+});
+
+document.getElementById('filtroChecklistSetor').addEventListener('change', (e) => { checklistFiltro.setor = e.target.value; renderChecklist(); });
+document.getElementById('filtroChecklistStatus').addEventListener('change', (e) => { checklistFiltro.status = e.target.value; renderChecklist(); });
 
 /* ================================== INIT ================================== */
 document.getElementById('dData').valueAsDate = new Date();
