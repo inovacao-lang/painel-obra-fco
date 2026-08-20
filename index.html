@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Controle - Reforma Nova Unidade FCO</title>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 108'%3E%3Cpath d='M50 22 L92 34 V60 C92 84 74 98 50 106 C26 98 8 84 8 60 V34 Z' fill='%230F2B56'/%3E%3Ctext x='50' y='78' text-anchor='middle' font-family='Arial, sans-serif' font-weight='800' font-size='46' fill='%23F9F2EA'%3EM%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Cliente Supabase (armazenamento em nuvem, acesso público sem login). Versão fixada por segurança. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
+
+<style>
+:root{
+  --creme:      #F5F3EF;
+  --azul-vivo:  #0063F2;
+  --azul-marinho:#0F2B56;
+  --ambar:      #FFBA00;
+  --vinho:      #A10A37;
+  --preto-fosco:#1A1A1A;
+  --verde:      #1E8C50;
+
+  --branco: #FFFFFF;
+  --cinza-borda: #E4E0D7;
+  --cinza-texto: #6B675E;
+  --sombra: 0 1px 2px rgba(20,18,15,0.05);
+  --raio: 14px;
+  --fonte: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin:0;
+  font-family: var(--fonte);
+  background: var(--azul-marinho);
+  color: var(--preto-fosco);
+  line-height:1.6;
+}
+
+h1,h2,h3{ color: var(--azul-marinho); margin:0 0 4px; letter-spacing:-0.01em; }
+
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+/* ============================= CABEÇALHO =============================== */
+.header-card{
+  background: var(--branco);
+  border: 1px solid var(--cinza-borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 36px 40px;
+  display:flex;
+  align-items:center;
+  margin-bottom: 24px;
+}
+.header-brand{ flex: 0 0 auto; display:flex; align-items:center; }
+.header-logo-img{ height:92px; width:auto; display:block; }
+.header-spacer{ flex: 0 0 auto; width:92px; visibility:hidden; }
+.header-title{ flex: 1 1 auto; text-align:center; padding: 0 16px; min-width:0; }
+.header-title h1{ font-size:1.7rem; letter-spacing:-0.02em; }
+.header-title p{ margin:6px 0 0; color:var(--cinza-texto); font-size:1rem;}
+
+/* ================================ ABAS =================================== */
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:24px;
+  overflow-x:auto;
+  padding-bottom:2px;
+}
+.tab-btn{
+  padding:10px 20px;
+  border-radius:999px;
+  border:1px solid var(--cinza-borda);
+  background:var(--branco);
+  color:var(--azul-marinho);
+  font-weight:700;
+  font-size:0.88rem;
+  cursor:pointer;
+  white-space:nowrap;
+  font-family:var(--fonte);
+  transition: background .15s, color .15s;
+}
+.tab-btn:hover{ background: var(--creme); }
+.tab-btn.active{ background:var(--azul-marinho); color:#fff; border-color:var(--azul-marinho); }
+.tab-panel{ display:none; }
+.tab-panel.active{ display:block; }
+
+/* =============================== CARDS =================================== */
+.section-card{
+  background: var(--branco);
+  border: 1px solid var(--cinza-borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 28px 32px;
+  margin-bottom: 28px;
+}
+.section-card h2{ font-size:1.05rem; margin-bottom:18px; }
+.section-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.section-header h2{ margin-bottom:0; }
+.section-hint{ font-size:0.82rem; color:var(--cinza-texto); margin:-10px 0 18px; }
+
+/* ================================ KPIs ==================================== */
+.kpi-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap:16px;
+  margin-bottom: 28px;
+}
+.kpi-card{
+  background: var(--branco);
+  border: 1px solid var(--cinza-borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 20px 22px;
+  border-left: 4px solid transparent;
+  transition: border-color .2s;
+}
+.kpi-label{ font-size:0.78rem; color:var(--cinza-texto); text-transform:uppercase; letter-spacing:0.04em; font-weight:600; }
+.kpi-value{ font-size:1.7rem; font-weight:800; color:var(--azul-marinho); margin-top:6px; }
+.kpi-value.bom{ color: var(--verde); }
+.kpi-value.alerta{ color: var(--vinho); }
+.kpi-value.atencao{ color: #7A5400; }
+.kpi-card.sem-bom{ border-left-color: var(--verde); }
+.kpi-card.sem-alerta{ border-left-color: var(--vinho); }
+.kpi-card.sem-atencao{ border-left-color: var(--ambar); }
+
+.progress-track{
+  margin-top:10px;
+  background: var(--creme);
+  border: 1px solid var(--cinza-borda);
+  border-radius: 999px;
+  height:10px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background: var(--azul-vivo);
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+
+/* ============================ STATUS BARRAS =============================== */
+.status-bars{ display:flex; flex-direction:column; gap:10px; }
+.status-bar-row{ display:grid; grid-template-columns: 140px 1fr 60px; align-items:center; gap:12px; font-size:0.88rem; }
+.status-bar-track{ background: var(--creme); border:1px solid var(--cinza-borda); border-radius:999px; height:14px; overflow:hidden; }
+.status-bar-fill{ height:100%; border-radius:999px; transition: width .4s ease; }
+.status-bar-row .qtd{ text-align:right; color:var(--cinza-texto); font-weight:600; }
+
+/* ================================ BADGES =================================== */
+.badge{
+  display:inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.badge-concluido{ background: rgba(30,140,80,0.14); color:#1E8C50; }
+.badge-andamento{ background: rgba(0,99,242,0.12); color: var(--azul-vivo); }
+.badge-atrasado{ background: rgba(161,10,55,0.12); color: var(--vinho); }
+.badge-naoiniciado{ background: rgba(107,103,94,0.14); color: var(--cinza-texto); }
+
+/* ================================ TABELAS =================================== */
+.table-wrap{ overflow-x:auto; }
+table{ width:100%; border-collapse:collapse; font-size:0.88rem; }
+th, td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--cinza-borda); white-space:nowrap; }
+th{ color:var(--cinza-texto); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.03em; font-weight:700; }
+th[data-key]{ cursor:pointer; user-select:none; }
+th[data-key]:hover{ color:var(--azul-marinho); }
+.sort-arrow{ display:inline-block; width:10px; font-size:0.7rem; }
+tbody tr:hover{ background: var(--creme); }
+td.etapa{ font-weight:700; color:var(--azul-marinho); }
+td.atraso-pos{ color:var(--vinho); font-weight:700; }
+
+/* ============================== FILTROS =============================== */
+.filters-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:flex-end; }
+.filters-row .field{ min-width:160px; }
+.filters-row .field.grow{ flex:1; min-width:200px; }
+.filters-row label{ font-size:0.72rem; font-weight:700; color:var(--cinza-texto); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:4px; display:block; }
+.filters-row select, .filters-row input{
+  width:100%; padding:9px 12px; border:1px solid var(--cinza-borda); border-radius:8px;
+  font-family:var(--fonte); font-size:0.85rem; background:#fff; color:var(--preto-fosco);
+}
+
+/* =========================== VIEW TOGGLE (Tabela/Gantt) ==================== */
+.view-toggle{ display:inline-flex; gap:4px; background:var(--creme); padding:4px; border-radius:10px; margin-bottom:18px; }
+.btn-toggle{ padding:7px 16px; border:none; background:transparent; border-radius:7px; font-weight:700; font-size:0.82rem; color:var(--cinza-texto); cursor:pointer; font-family:var(--fonte); }
+.btn-toggle.active{ background:var(--branco); color:var(--azul-marinho); box-shadow:var(--sombra); }
+
+/* ================================= GANTT =================================== */
+.gantt-scroll{ overflow-x:auto; }
+.gantt-inner{ min-width:640px; }
+.gantt-scale{ position:relative; height:22px; margin-left:200px; border-bottom:1px solid var(--cinza-borda); font-size:0.68rem; color:var(--cinza-texto); }
+.gantt-scale span{ position:absolute; transform:translateX(-6px); }
+.gantt-group-label{ font-weight:800; color:var(--azul-marinho); font-size:0.8rem; margin:16px 0 6px; }
+.gantt-row{ display:flex; align-items:center; height:32px; }
+.gantt-row-label{ width:200px; flex-shrink:0; font-size:0.78rem; padding-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gantt-track{ position:relative; flex:1; height:18px; background:var(--creme); border-radius:6px; }
+.gantt-bar{ position:absolute; height:7px; border-radius:4px; }
+.gantt-bar.previsto{ background:#D8D3C6; border:1px solid #B7B7B7; top:1px; }
+.gantt-bar.real{ top:10px; }
+.gantt-today{ position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--vinho); opacity:0.55; }
+.gantt-legend{ display:flex; gap:16px; font-size:0.76rem; color:var(--cinza-texto); margin-top:16px; flex-wrap:wrap; }
+.gantt-legend span{ display:inline-flex; align-items:center; gap:6px; }
+.gantt-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+
+/* ============================== FORMULÁRIOS =============================== */
+.form-card{ background:#FFFDF8; border:1px dashed var(--ambar); border-radius:var(--raio); padding:24px 28px; margin-bottom:24px; }
+.form-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+.field{ display:flex; flex-direction:column; }
+.field.span-2{ grid-column: span 2; }
+.field label{ font-size:0.75rem; font-weight:700; color:var(--azul-marinho); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.03em; }
+.field input, .field select, .field textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--cinza-borda); border-radius:8px;
+  font-family:var(--fonte); font-size:0.92rem; background:#fff; color:var(--preto-fosco);
+}
+.field textarea{ resize:vertical; min-height:60px; }
+.field input:focus, .field select:focus, .field textarea:focus{
+  outline:none; border-color:var(--azul-vivo); box-shadow:0 0 0 3px rgba(0,99,242,0.12);
+}
+.actions-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+
+.btn{ padding:10px 20px; border-radius:8px; border:none; font-weight:700; cursor:pointer; font-size:0.86rem; font-family:var(--fonte); }
+.btn-primary{ background:var(--azul-vivo); color:#fff; }
+.btn-primary:hover{ background:#0050c4; }
+.btn-secondary{ background:var(--creme); color:var(--azul-marinho); border:1px solid var(--cinza-borda); }
+.btn-secondary:hover{ background:#ECE8DE; }
+.btn-danger{ background:rgba(161,10,55,0.08); color:var(--vinho); border:1px solid rgba(161,10,55,0.25); }
+.btn-danger:hover{ background:rgba(161,10,55,0.16); }
+.btn-sm{ padding:6px 12px; font-size:0.76rem; }
+.btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+.row-actions{ display:flex; gap:6px; }
+
+/* ============================== DIÁRIO DA OBRA =============================== */
+.diario-lista{ display:flex; flex-direction:column; gap:16px; }
+.diario-item{
+  border: 1px solid var(--cinza-borda);
+  border-radius: 10px;
+  padding: 16px 18px;
+  display:grid;
+  grid-template-columns: 100px 1fr auto;
+  gap:16px;
+}
+.diario-item.tem-ocorrencia{ border-left:4px solid var(--ambar); }
+.diario-data{ font-weight:800; color:var(--azul-marinho); font-size:0.95rem; }
+.diario-clima{ display:block; margin-top:4px; font-size:0.78rem; color:var(--cinza-texto); font-weight:600; }
+.diario-corpo p{ margin:0 0 6px; font-size:0.9rem; }
+.diario-corpo .rotulo{ font-weight:700; color:var(--azul-marinho); }
+.diario-ocorrencia{ color:#7A5400; font-weight:600; }
+.diario-ocorrencia.nenhuma{ color:var(--cinza-texto); font-weight:400; }
+.diario-foto{ font-size:0.82rem; color:var(--azul-vivo); word-break:break-all; }
+.diario-foto-thumb{ margin-top:8px; }
+.diario-foto-thumb img{ max-width:180px; max-height:130px; border-radius:8px; border:1px solid var(--cinza-borda); object-fit:cover; display:block; }
+
+.hidden{ display:none !important; }
+.empty-state{ color:var(--cinza-texto); font-size:0.9rem; padding:16px 0; text-align:center; }
+
+/* ================================= TOAST =================================== */
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px);
+  background:var(--azul-marinho); color:#fff; padding:12px 22px; border-radius:10px;
+  font-size:0.88rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.22); z-index:999;
+  opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.erro{ background:var(--vinho); }
+
+/* ================================= RODAPÉ =================================== */
+.app-footer{ max-width:1100px; margin:0 auto; padding:8px 24px 40px; text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.65); }
+.app-footer strong{ color:#fff; }
+
+@media (max-width:640px){
+  .header-card{ flex-direction:column; align-items:center; text-align:center; }
+  .header-brand{ margin-bottom:12px; }
+  .header-spacer{ display:none; }
+  .header-title{ text-align:center; padding:0; }
+  .diario-item{ grid-template-columns: 1fr; }
+  .field.span-2{ grid-column: span 1; }
+  .status-bar-row{ grid-template-columns: 100px 1fr 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- CABEÇALHO -->
+  <header class="header-card">
+    <div class="header-brand">
+      <img class="header-logo-img" src="data:image/png;base64,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" alt="Logo da Faculdade FCO">
+    </div>
+    <div class="header-title">
+      <h1>PAINEL DE CONTROLE - REFORMA NOVA UNIDADE FCO</h1>
+      <p>Diário de Obra</p>
+    </div>
+    <div class="header-spacer" aria-hidden="true"></div>
+  </header>
+
+  <!-- ABAS -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="painel">Painel</button>
+    <button class="tab-btn" data-tab="cronograma">Cronograma</button>
+    <button class="tab-btn" data-tab="diario">Diário da Obra</button>
+  </nav>
+
+  <!-- ===================== ABA: PAINEL (Dashboard) ===================== -->
+  <div class="tab-panel active" id="tab-painel">
+
+    <!-- INFORMAÇÕES DO PROJETO -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Informações do Projeto</h2>
+        <button class="btn btn-secondary btn-sm" id="btnEditarProjeto">Editar informações</button>
+      </div>
+      <div class="kpi-grid" style="margin-bottom:0;" id="projetoView">
+        <div class="kpi-card">
+          <div class="kpi-label">Data de Início</div>
+          <div class="kpi-value" style="font-size:1.1rem;" id="viewInicio">—</div>
+        </div>
+      </div>
+
+      <form class="form-card hidden" id="formProjeto" style="margin-top:20px;">
+        <div class="form-grid">
+          <div class="field">
+            <label for="inNome">Nome do Projeto</label>
+            <input type="text" id="inNome" required>
+          </div>
+          <div class="field">
+            <label for="inResponsavel">Responsável Técnico</label>
+            <input type="text" id="inResponsavel" required>
+          </div>
+          <div class="field span-2">
+            <label for="inEndereco">Endereço</label>
+            <input type="text" id="inEndereco">
+          </div>
+          <div class="field">
+            <label for="inInicio">Data de Início</label>
+            <input type="date" id="inInicio" required>
+          </div>
+          <div class="field">
+            <label for="inOrcamento">Orçamento Total (R$)</label>
+            <input type="number" id="inOrcamento" min="0" step="0.01">
+          </div>
+          <div class="field">
+            <label for="inRealizado">Valor Realizado (R$)</label>
+            <input type="number" id="inRealizado" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="actions-row">
+          <button type="submit" class="btn btn-primary">Salvar informações</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelarProjeto">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- INDICADORES GERAIS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">% Concluído (Geral)</div>
+        <div class="kpi-value" id="kpiPctGeral">0,0%</div>
+        <div class="progress-track"><div class="progress-fill" id="kpiPctGeralBar" style="width:0%;"></div></div>
+      </div>
+      <div class="kpi-card" id="kpiCardDias">
+        <div class="kpi-label">Dias Restantes p/ Prazo Final</div>
+        <div class="kpi-value" id="kpiDiasRestantes">—</div>
+      </div>
+      <div class="kpi-card" id="kpiCardAtraso">
+        <div class="kpi-label">Atividades em Atraso</div>
+        <div class="kpi-value" id="kpiAtividadesAtraso">0</div>
+      </div>
+    </div>
+
+    <!-- STATUS DAS ATIVIDADES -->
+    <div class="section-card">
+      <h2 id="statusTitulo">Status das Atividades (Cronograma)</h2>
+      <div class="status-bars" id="statusBars"></div>
+    </div>
+
+    <!-- RESUMO POR ETAPA -->
+    <div class="section-card">
+      <h2>Resumo por Etapa</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Etapa</th><th>Qtd. Atividades</th><th>% Concluído Médio</th>
+              <th>Concluídas</th><th>Em Andamento</th><th>Atrasadas</th><th>Não Iniciadas</th>
+            </tr>
+          </thead>
+          <tbody id="corpoResumoEtapa"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ABA: CRONOGRAMA ===================== -->
+  <div class="tab-panel" id="tab-cronograma">
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Cronograma Detalhado</h2>
+        <button class="btn btn-primary btn-sm" id="btnNovaAtividade">+ Nova Atividade</button>
+      </div>
+      <p class="section-hint">Duração, % Concluído médio, Status e Atraso são calculados automaticamente a partir das datas e do % concluído informado.</p>
+
+      <form class="form-card hidden" id="formCronograma">
+        <input type="hidden" id="cronoId">
+        <div class="form-grid">
+          <div class="field">
+            <label for="cEtapa">Etapa</label>
+            <input type="text" id="cEtapa" required placeholder="Ex.: Fundação">
+          </div>
+          <div class="field span-2">
+            <label for="cAtividade">Atividade</label>
+            <input type="text" id="cAtividade" required placeholder="Ex.: Escavação e sapatas">
+          </div>
+          <div class="field">
+            <label for="cResponsavel">Responsável</label>
+            <input type="text" id="cResponsavel">
+          </div>
+          <div class="field">
+            <label for="cInicioPrevisto">Início Previsto</label>
+            <input type="date" id="cInicioPrevisto" required>
+          </div>
+          <div class="field">
+            <label for="cTerminoPrevisto">Término Previsto</label>
+            <input type="date" id="cTerminoPrevisto" required>
+          </div>
+          <div class="field">
+            <label for="cInicioReal">Início Real</label>
+            <input type="date" id="cInicioReal">
+          </div>
+          <div class="field">
+            <label for="cTerminoReal">Término Real</label>
+            <input type="date" id="cTerminoReal">
+          </div>
+          <div class="field">
+            <label for="cPercentual">% Concluído</label>
+            <input type="number" id="cPercentual" min="0" max="100" step="1" value="0">
+          </div>
+        </div>
+        <div class="actions-row">
+          <button type="submit" class="btn btn-primary" id="btnSalvarCronograma">Salvar atividade</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelarCronograma">Cancelar</button>
+        </div>
+      </form>
+
+      <div class="filters-row">
+        <div class="field">
+          <label for="filtroEtapa">Etapa</label>
+          <select id="filtroEtapa"><option value="">Todas as Etapas</option></select>
+        </div>
+        <div class="field">
+          <label for="filtroResponsavel">Responsável</label>
+          <select id="filtroResponsavel"><option value="">Todos os Responsáveis</option></select>
+        </div>
+        <div class="field">
+          <label for="filtroStatus">Status</label>
+          <select id="filtroStatus">
+            <option value="">Todos os Status</option>
+            <option value="Não iniciado">Não iniciado</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Concluído">Concluído</option>
+            <option value="Atrasado">Atrasado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="view-toggle">
+        <button class="btn-toggle active" data-view="tabela" type="button">Tabela</button>
+        <button class="btn-toggle" data-view="gantt" type="button">Gantt</button>
+      </div>
+
+      <div class="table-wrap" id="viewTabela">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="etapa">Etapa <span class="sort-arrow" data-key="etapa"></span></th>
+              <th data-key="atividade">Atividade <span class="sort-arrow" data-key="atividade"></span></th>
+              <th data-key="responsavel">Responsável <span class="sort-arrow" data-key="responsavel"></span></th>
+              <th data-key="inicio_previsto">Início Previsto <span class="sort-arrow" data-key="inicio_previsto"></span></th>
+              <th data-key="termino_previsto">Término Previsto <span class="sort-arrow" data-key="termino_previsto"></span></th>
+              <th data-key="inicio_real">Início Real <span class="sort-arrow" data-key="inicio_real"></span></th>
+              <th data-key="termino_real">Término Real <span class="sort-arrow" data-key="termino_real"></span></th>
+              <th data-key="duracao">Duração Prev. (dias) <span class="sort-arrow" data-key="duracao"></span></th>
+              <th data-key="percentual_concluido">% Concluído <span class="sort-arrow" data-key="percentual_concluido"></span></th>
+              <th data-key="status">Status <span class="sort-arrow" data-key="status"></span></th>
+              <th data-key="atraso">Atraso (dias) <span class="sort-arrow" data-key="atraso"></span></th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpoCronograma"></tbody>
+        </table>
+      </div>
+
+      <div class="gantt-scroll hidden" id="viewGantt">
+        <div class="gantt-inner">
+          <div class="gantt-scale" id="ganttAxis"></div>
+          <div id="ganttBody"></div>
+          <div class="gantt-legend">
+            <span><i style="background:#D8D3C6; border:1px solid #B7B7B7;"></i> Previsto</span>
+            <span><i style="background:var(--verde);"></i> Concluído</span>
+            <span><i style="background:var(--azul-vivo);"></i> Em andamento</span>
+            <span><i style="background:var(--vinho);"></i> Atrasado</span>
+            <span><i style="background:var(--vinho); opacity:0.55;"></i> Hoje</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ABA: DIÁRIO DA OBRA ===================== -->
+  <div class="tab-panel" id="tab-diario">
+    <div class="section-card">
+      <h2>Registrar novo dia de obra</h2>
+      <form id="formDiario">
+        <div class="form-grid">
+          <div class="field">
+            <label for="dData">Data</label>
+            <input type="date" id="dData" required>
+          </div>
+          <div class="field span-2">
+            <label for="dAtividades">Atividades Realizadas</label>
+            <textarea id="dAtividades" required></textarea>
+          </div>
+          <div class="field">
+            <label for="dEquipe">Equipe (nº pessoas / função)</label>
+            <input type="text" id="dEquipe" placeholder="Ex.: 6 pedreiros, 2 eletricistas">
+          </div>
+          <div class="field">
+            <label for="dClima">Condições Climáticas</label>
+            <input type="text" id="dClima" placeholder="Ex.: Bom, Chuva leve, Nublado">
+          </div>
+          <div class="field span-2">
+            <label for="dOcorrencias">Ocorrências / Problemas</label>
+            <textarea id="dOcorrencias" placeholder="Nenhuma"></textarea>
+          </div>
+          <div class="field">
+            <label for="dFotos">Link da foto (opcional se enviar arquivo)</label>
+            <input type="text" id="dFotos" placeholder="Ex.: link do Google Drive ou nome do arquivo">
+          </div>
+          <div class="field">
+            <label for="dFotoArquivo">Ou enviar foto (upload)</label>
+            <input type="file" id="dFotoArquivo" accept="image/*">
+          </div>
+          <div class="field span-2">
+            <label for="dObservacoes">Observações</label>
+            <textarea id="dObservacoes"></textarea>
+          </div>
+        </div>
+        <div class="actions-row">
+          <button type="submit" class="btn btn-primary">Registrar entrada</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-card">
+      <h2>Histórico do Diário</h2>
+      <div class="filters-row">
+        <div class="field">
+          <label for="diarioDataIni">De</label>
+          <input type="date" id="diarioDataIni">
+        </div>
+        <div class="field">
+          <label for="diarioDataFim">Até</label>
+          <input type="date" id="diarioDataFim">
+        </div>
+        <div class="field grow">
+          <label for="diarioBusca">Buscar</label>
+          <input type="text" id="diarioBusca" placeholder="Buscar em atividades, equipe, ocorrências...">
+        </div>
+        <div class="field">
+          <label for="diarioOrdem">Ordenar</label>
+          <select id="diarioOrdem">
+            <option value="desc">Mais recente primeiro</option>
+            <option value="asc">Mais antigo primeiro</option>
+          </select>
+        </div>
+      </div>
+      <div class="diario-lista" id="listaDiario"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="app-footer">
+  Última atualização dos dados: <strong id="footerUltimaAtualizacao">—</strong>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =============================================================================
+   CONEXÃO: para apontar este painel para outro projeto Supabase, troque a URL
+   e a chave publicável abaixo (Project Settings > API Keys no painel do Supabase).
+   A chave publicável é segura para uso público no navegador (acesso controlado
+   pelas políticas de RLS configuradas no banco).
+   ========================================================================== */
+const SUPABASE_URL = 'https://cgtobiuaiaynhunuyahs.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_YDDDVcXaxixadDczvsioPg_jGPXUUgN';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+/* ============================= ESTADO GERAL ============================= */
+let projeto = null;
+let cronograma = [];
+let diario = [];
+let cronoSort = { key: 'ordem', dir: 'asc' };
+let cronoFiltro = { etapa: '', responsavel: '', status: '' };
+
+/* ============================== UTILITÁRIOS ============================== */
+function esc(str){
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function hojeISO(){
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function parseISO(iso){
+  if (!iso) return null;
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function diffDias(a, b){
+  return Math.round((a - b) / 86400000);
+}
+function formatDateBR(iso){
+  if (!iso) return '—';
+  const d = parseISO(iso);
+  return d.toLocaleDateString('pt-BR');
+}
+function formatPercent(fracao){
+  return (fracao * 100).toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1}) + '%';
+}
+function formatMoeda(valor){
+  return (valor || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function mostrarToast(msg, erro){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (erro ? ' erro' : '');
+  clearTimeout(mostrarToast._timer);
+  mostrarToast._timer = setTimeout(() => { t.className = 'toast'; }, 3200);
+}
+
+/* ===================== FÓRMULAS (réplica da planilha) ===================== */
+function calcDuracaoPrevista(row){
+  if (!row.inicio_previsto || !row.termino_previsto) return null;
+  return diffDias(parseISO(row.termino_previsto), parseISO(row.inicio_previsto)) + 1;
+}
+function calcAtrasoDias(row){
+  if (!row.inicio_previsto || !row.termino_previsto) return null;
+  const pct = Number(row.percentual_concluido) || 0;
+  const termino = parseISO(row.termino_previsto);
+  if (pct === 1){
+    if (!row.termino_real) return 0;
+    return Math.max(diffDias(parseISO(row.termino_real), termino), 0);
+  }
+  const hoje = hojeISO();
+  return hoje > termino ? diffDias(hoje, termino) : 0;
+}
+function calcStatus(row){
+  if (!row.inicio_previsto || !row.termino_previsto) return '';
+  const pct = Number(row.percentual_concluido) || 0;
+  const atraso = calcAtrasoDias(row);
+  if (pct === 1) return 'Concluído';
+  if (atraso > 0) return 'Atrasado';
+  if (!pct || pct === 0) return 'Não iniciado';
+  return 'Em andamento';
+}
+const STATUS_INFO = {
+  'Concluído':   ['badge-concluido', '#1E8C50'],
+  'Em andamento':['badge-andamento', '#0063F2'],
+  'Atrasado':    ['badge-atrasado', '#A10A37'],
+  'Não iniciado':['badge-naoiniciado', '#6B675E'],
+};
+
+function calcIndicadores(){
+  const linhas = cronograma.map(r => ({...r, status: calcStatus(r), atraso: calcAtrasoDias(r), duracao: calcDuracaoPrevista(r)}));
+
+  const pctGeral = linhas.length
+    ? linhas.reduce((s,r) => s + (Number(r.percentual_concluido) || 0), 0) / linhas.length
+    : 0;
+
+  const orcamento = Number(projeto?.orcamento_total) || 0;
+  const realizado = Number(projeto?.valor_realizado) || 0;
+  const saldo = orcamento - realizado;
+
+  const datasTermino = linhas.map(r => r.termino_previsto).filter(Boolean).map(parseISO);
+  const previsaoTermino = datasTermino.length ? new Date(Math.max(...datasTermino)) : null;
+  const diasRestantes = previsaoTermino ? diffDias(previsaoTermino, hojeISO()) : null;
+
+  const statusCounts = {'Não iniciado':0, 'Em andamento':0, 'Concluído':0, 'Atrasado':0};
+  linhas.forEach(r => { if (r.status && statusCounts.hasOwnProperty(r.status)) statusCounts[r.status]++; });
+
+  const etapasOrdem = [];
+  const etapasMap = {};
+  linhas.forEach(r => {
+    if (!r.etapa) return;
+    if (!etapasMap[r.etapa]){
+      etapasMap[r.etapa] = { etapa:r.etapa, qtd:0, somaPct:0, concluidas:0, emAndamento:0, atrasadas:0, naoIniciadas:0 };
+      etapasOrdem.push(r.etapa);
+    }
+    const e = etapasMap[r.etapa];
+    e.qtd++;
+    e.somaPct += Number(r.percentual_concluido) || 0;
+    if (r.status === 'Concluído') e.concluidas++;
+    else if (r.status === 'Em andamento') e.emAndamento++;
+    else if (r.status === 'Atrasado') e.atrasadas++;
+    else if (r.status === 'Não iniciado') e.naoIniciadas++;
+  });
+  const resumoEtapas = etapasOrdem.map(nome => {
+    const e = etapasMap[nome];
+    return { ...e, pctMedio: e.qtd ? e.somaPct / e.qtd : 0 };
+  });
+
+  return { linhas, pctGeral, orcamento, realizado, saldo, previsaoTermino, diasRestantes, statusCounts, resumoEtapas };
+}
+
+/* ============================ FILTROS E ORDENAÇÃO ============================ */
+function aplicarFiltrosCronograma(linhas){
+  return linhas.filter(r =>
+    (!cronoFiltro.etapa || r.etapa === cronoFiltro.etapa) &&
+    (!cronoFiltro.responsavel || r.responsavel === cronoFiltro.responsavel) &&
+    (!cronoFiltro.status || r.status === cronoFiltro.status)
+  );
+}
+function ordenarLinhas(linhas){
+  const { key, dir } = cronoSort;
+  const factor = dir === 'asc' ? 1 : -1;
+  return [...linhas].sort((a,b) => {
+    let va = a[key]; let vb = b[key];
+    if (va == null) va = '';
+    if (vb == null) vb = '';
+    if (typeof va === 'string') return va.localeCompare(vb) * factor;
+    return (va - vb) * factor;
+  });
+}
+function popularFiltrosCronograma(){
+  const selEtapa = document.getElementById('filtroEtapa');
+  const selResp = document.getElementById('filtroResponsavel');
+  const etapas = [...new Set(cronograma.map(r => r.etapa).filter(Boolean))];
+  const responsaveis = [...new Set(cronograma.map(r => r.responsavel).filter(Boolean))];
+  const curEtapa = selEtapa.value, curResp = selResp.value;
+  selEtapa.innerHTML = '<option value="">Todas as Etapas</option>' + etapas.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('');
+  selResp.innerHTML = '<option value="">Todos os Responsáveis</option>' + responsaveis.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+  selEtapa.value = etapas.includes(curEtapa) ? curEtapa : '';
+  selResp.value = responsaveis.includes(curResp) ? curResp : '';
+}
+function atualizarSetasOrdenacao(){
+  document.querySelectorAll('.sort-arrow').forEach(span => {
+    const key = span.dataset.key;
+    span.textContent = key === cronoSort.key ? (cronoSort.dir === 'asc' ? '▲' : '▼') : '';
+  });
+}
+
+function aplicarFiltrosDiario(){
+  const dIni = document.getElementById('diarioDataIni').value;
+  const dFim = document.getElementById('diarioDataFim').value;
+  const busca = document.getElementById('diarioBusca').value.trim().toLowerCase();
+  const ordem = document.getElementById('diarioOrdem').value;
+  let lista = diario.filter(e => {
+    if (dIni && e.data < dIni) return false;
+    if (dFim && e.data > dFim) return false;
+    if (busca){
+      const alvo = [e.atividades, e.equipe, e.ocorrencias, e.observacoes].filter(Boolean).join(' ').toLowerCase();
+      if (!alvo.includes(busca)) return false;
+    }
+    return true;
+  });
+  lista.sort((a,b) => ordem === 'asc' ? a.data.localeCompare(b.data) : b.data.localeCompare(a.data));
+  return lista;
+}
+
+/* ================================ RENDER ================================= */
+function renderProjeto(){
+  document.getElementById('viewInicio').textContent = formatDateBR(projeto?.data_inicio);
+}
+
+function aplicarSemaforo(elId, cardId, classe){
+  const el = document.getElementById(elId);
+  const card = document.getElementById(cardId);
+  el.classList.remove('bom','alerta','atencao');
+  card.classList.remove('sem-bom','sem-alerta','sem-atencao');
+  if (classe){
+    el.classList.add(classe);
+    card.classList.add('sem-' + classe);
+  }
+}
+
+function renderPainel(){
+  const ind = calcIndicadores();
+
+  document.getElementById('kpiPctGeral').textContent = formatPercent(ind.pctGeral);
+  document.getElementById('kpiPctGeralBar').style.width = (ind.pctGeral*100) + '%';
+  document.getElementById('kpiDiasRestantes').textContent = ind.diasRestantes === null ? '—' : ind.diasRestantes;
+  document.getElementById('kpiAtividadesAtraso').textContent = ind.statusCounts['Atrasado'];
+
+  aplicarSemaforo('kpiDiasRestantes', 'kpiCardDias',
+    ind.diasRestantes === null ? '' : (ind.diasRestantes < 0 ? 'alerta' : (ind.diasRestantes <= 7 ? 'atencao' : 'bom')));
+  aplicarSemaforo('kpiAtividadesAtraso', 'kpiCardAtraso', ind.statusCounts['Atrasado'] > 0 ? 'alerta' : 'bom');
+
+  const total = ind.linhas.length;
+  document.getElementById('statusTitulo').textContent = `Status das Atividades (Cronograma) — ${total} no total`;
+  const ordem = ['Concluído','Em andamento','Atrasado','Não iniciado'];
+  const statusBars = document.getElementById('statusBars');
+  statusBars.innerHTML = '';
+  ordem.forEach(status => {
+    const qtd = ind.statusCounts[status];
+    const pct = total ? (qtd/total*100) : 0;
+    const [,cor] = STATUS_INFO[status];
+    const row = document.createElement('div');
+    row.className = 'status-bar-row';
+    row.innerHTML = `
+      <span>${status}</span>
+      <div class="status-bar-track"><div class="status-bar-fill" style="width:${pct}%; background:${cor};"></div></div>
+      <span class="qtd">${qtd}</span>
+    `;
+    statusBars.appendChild(row);
+  });
+
+  const corpoResumo = document.getElementById('corpoResumoEtapa');
+  corpoResumo.innerHTML = '';
+  if (!ind.resumoEtapas.length){
+    corpoResumo.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma atividade cadastrada ainda.</td></tr>`;
+  }
+  ind.resumoEtapas.forEach(e => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="etapa">${esc(e.etapa)}</td>
+      <td>${e.qtd}</td>
+      <td>${formatPercent(e.pctMedio)}</td>
+      <td>${e.concluidas}</td>
+      <td>${e.emAndamento}</td>
+      <td>${e.atrasadas}</td>
+      <td>${e.naoIniciadas}</td>
+    `;
+    corpoResumo.appendChild(tr);
+  });
+}
+
+function renderCronogramaTabela(linhas){
+  const corpo = document.getElementById('corpoCronograma');
+  corpo.innerHTML = '';
+  if (!linhas.length){
+    corpo.innerHTML = `<tr><td colspan="12" class="empty-state">Nenhuma atividade encontrada com os filtros atuais.</td></tr>`;
+    return;
+  }
+  linhas.forEach(r => {
+    const [classe] = STATUS_INFO[r.status] || ['badge-naoiniciado'];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="etapa">${esc(r.etapa)}</td>
+      <td>${esc(r.atividade)}</td>
+      <td>${esc(r.responsavel) || '—'}</td>
+      <td>${formatDateBR(r.inicio_previsto)}</td>
+      <td>${formatDateBR(r.termino_previsto)}</td>
+      <td>${formatDateBR(r.inicio_real)}</td>
+      <td>${formatDateBR(r.termino_real)}</td>
+      <td>${r.duracao ?? '—'}</td>
+      <td>${formatPercent(Number(r.percentual_concluido) || 0)}</td>
+      <td><span class="badge ${classe}">${esc(r.status) || '—'}</span></td>
+      <td class="${r.atraso > 0 ? 'atraso-pos' : ''}">${r.atraso ?? '—'}</td>
+      <td class="row-actions">
+        <button class="btn btn-secondary btn-sm" data-editar="${r.id}">Editar</button>
+        <button class="btn btn-danger btn-sm" data-excluir="${r.id}">Excluir</button>
+      </td>
+    `;
+    corpo.appendChild(tr);
+  });
+}
+
+function renderGantt(linhas){
+  const axis = document.getElementById('ganttAxis');
+  const body = document.getElementById('ganttBody');
+  axis.innerHTML = '';
+  body.innerHTML = '';
+  if (!linhas.length){
+    body.innerHTML = `<div class="empty-state">Nenhuma atividade encontrada com os filtros atuais.</div>`;
+    return;
+  }
+  const hoje = hojeISO();
+  const todasDatas = [hoje];
+  linhas.forEach(r => {
+    ['inicio_previsto','termino_previsto','inicio_real','termino_real'].forEach(campo => {
+      if (r[campo]) todasDatas.push(parseISO(r[campo]));
+    });
+  });
+  const minDate = new Date(Math.min(...todasDatas));
+  const maxDate = new Date(Math.max(...todasDatas));
+  const totalDias = Math.max(diffDias(maxDate, minDate), 1);
+
+  const leftPct = (d) => (diffDias(d, minDate) / totalDias) * 100;
+  const widthPct = (d1, d2) => Math.max(((diffDias(d2, d1) + 1) / totalDias) * 100, 0.6);
+
+  const mesesVistos = new Set();
+  for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)){
+    const key = d.getFullYear() + '-' + d.getMonth();
+    if (!mesesVistos.has(key)){
+      mesesVistos.add(key);
+      const span = document.createElement('span');
+      span.style.left = leftPct(d) + '%';
+      span.textContent = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      axis.appendChild(span);
+    }
+  }
+
+  let etapaAtual = null;
+  linhas.forEach(r => {
+    if (r.etapa !== etapaAtual){
+      etapaAtual = r.etapa;
+      const h = document.createElement('div');
+      h.className = 'gantt-group-label';
+      h.textContent = etapaAtual;
+      body.appendChild(h);
+    }
+    const [,cor] = STATUS_INFO[r.status] || [,'#6B675E'];
+    let barsHtml = '';
+    if (r.inicio_previsto && r.termino_previsto){
+      barsHtml += `<div class="gantt-bar previsto" style="left:${leftPct(parseISO(r.inicio_previsto))}%; width:${widthPct(parseISO(r.inicio_previsto), parseISO(r.termino_previsto))}%;"></div>`;
+    }
+    const realFim = r.termino_real ? parseISO(r.termino_real) : (r.inicio_real ? hoje : null);
+    if (r.inicio_real && realFim){
+      barsHtml += `<div class="gantt-bar real" style="left:${leftPct(parseISO(r.inicio_real))}%; width:${widthPct(parseISO(r.inicio_real), realFim)}%; background:${cor};"></div>`;
+    }
+    const row = document.createElement('div');
+    row.className = 'gantt-row';
+    row.innerHTML = `
+      <div class="gantt-row-label" title="${esc(r.atividade)}">${esc(r.atividade)}</div>
+      <div class="gantt-track">
+        ${barsHtml}
+        <div class="gantt-today" style="left:${leftPct(hoje)}%;"></div>
+      </div>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function renderCronograma(){
+  popularFiltrosCronograma();
+  const ind = calcIndicadores();
+  const filtradas = aplicarFiltrosCronograma(ind.linhas);
+  renderCronogramaTabela(ordenarLinhas(filtradas));
+  renderGantt(filtradas);
+  atualizarSetasOrdenacao();
+}
+
+function isImageUrl(url){
+  if (!url) return false;
+  if (url.includes('/storage/v1/object/public/obra-fotos/')) return true;
+  return /^https?:\/\//i.test(url) && /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url.split('?')[0]);
+}
+
+function renderDiario(){
+  const lista = document.getElementById('listaDiario');
+  const filtrados = aplicarFiltrosDiario();
+  lista.innerHTML = '';
+  if (!filtrados.length){
+    lista.innerHTML = `<div class="empty-state">Nenhum registro encontrado com os filtros atuais.</div>`;
+    return;
+  }
+  filtrados.forEach(entry => {
+    const semOcorrencia = !entry.ocorrencias || entry.ocorrencias.trim().toLowerCase() === 'nenhuma';
+    const fotoHtml = entry.fotos
+      ? (isImageUrl(entry.fotos)
+          ? `<div class="diario-foto-thumb"><img src="${esc(entry.fotos)}" alt="Foto da obra em ${formatDateBR(entry.data)}" loading="lazy"></div>`
+          : `<p class="diario-foto"><span class="rotulo">Fotos:</span> ${esc(entry.fotos)}</p>`)
+      : '';
+    const div = document.createElement('div');
+    div.className = 'diario-item' + (semOcorrencia ? '' : ' tem-ocorrencia');
+    div.innerHTML = `
+      <div>
+        <div class="diario-data">${formatDateBR(entry.data)}</div>
+        <span class="diario-clima">${esc(entry.condicoes_climaticas) || '—'}</span>
+      </div>
+      <div class="diario-corpo">
+        <p><span class="rotulo">Atividades:</span> ${esc(entry.atividades) || '—'}</p>
+        <p><span class="rotulo">Equipe:</span> ${esc(entry.equipe) || '—'}</p>
+        <p class="${semOcorrencia ? 'diario-ocorrencia nenhuma' : 'diario-ocorrencia'}"><span class="rotulo">Ocorrências:</span> ${esc(entry.ocorrencias) || 'Nenhuma'}</p>
+        <p><span class="rotulo">Observações:</span> ${esc(entry.observacoes) || '—'}</p>
+        ${fotoHtml}
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-danger btn-sm" data-excluir-diario="${entry.id}">Excluir</button>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+function renderFooter(){
+  const datas = [];
+  if (projeto?.updated_at) datas.push(new Date(projeto.updated_at));
+  cronograma.forEach(r => { if (r.updated_at) datas.push(new Date(r.updated_at)); });
+  diario.forEach(r => { if (r.created_at) datas.push(new Date(r.created_at)); });
+  const ultima = datas.length ? new Date(Math.max(...datas)) : null;
+  document.getElementById('footerUltimaAtualizacao').textContent = ultima ? ultima.toLocaleString('pt-BR') : '—';
+}
+
+/* ============================== CARREGAMENTO ============================== */
+async function carregarTudo(){
+  try{
+    const [{data: proj, error: e1}, {data: cron, error: e2}, {data: dia, error: e3}] = await Promise.all([
+      supabaseClient.from('projeto').select('*').eq('id', 1).single(),
+      supabaseClient.from('cronograma').select('*').order('ordem', {ascending:true}).order('created_at', {ascending:true}),
+      supabaseClient.from('diario').select('*').order('data', {ascending:false}).order('created_at', {ascending:false}),
+    ]);
+    if (e1) throw e1;
+    if (e2) throw e2;
+    if (e3) throw e3;
+    projeto = proj;
+    cronograma = cron || [];
+    diario = dia || [];
+    renderProjeto();
+    renderPainel();
+    renderCronograma();
+    renderDiario();
+    renderFooter();
+  } catch(err){
+    console.error(err);
+    mostrarToast('Erro ao carregar dados: ' + err.message, true);
+  }
+}
+
+/* ================================== ABAS ================================== */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================ FORM: PROJETO ============================ */
+const formProjeto = document.getElementById('formProjeto');
+document.getElementById('btnEditarProjeto').addEventListener('click', () => {
+  document.getElementById('inNome').value = projeto?.nome || '';
+  document.getElementById('inResponsavel').value = projeto?.responsavel || '';
+  document.getElementById('inEndereco').value = projeto?.endereco || '';
+  document.getElementById('inInicio').value = projeto?.data_inicio || '';
+  document.getElementById('inOrcamento').value = projeto?.orcamento_total ?? 0;
+  document.getElementById('inRealizado').value = projeto?.valor_realizado ?? 0;
+  formProjeto.classList.remove('hidden');
+});
+document.getElementById('btnCancelarProjeto').addEventListener('click', () => {
+  formProjeto.classList.add('hidden');
+});
+formProjeto.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    nome: document.getElementById('inNome').value.trim(),
+    responsavel: document.getElementById('inResponsavel').value.trim(),
+    endereco: document.getElementById('inEndereco').value.trim(),
+    data_inicio: document.getElementById('inInicio').value,
+    orcamento_total: parseFloat(document.getElementById('inOrcamento').value) || 0,
+    valor_realizado: parseFloat(document.getElementById('inRealizado').value) || 0,
+    updated_at: new Date().toISOString(),
+  };
+  const { data, error } = await supabaseClient.from('projeto').update(payload).eq('id', 1).select().single();
+  if (error){ mostrarToast('Erro ao salvar: ' + error.message, true); return; }
+  projeto = data;
+  renderProjeto();
+  renderPainel();
+  renderFooter();
+  formProjeto.classList.add('hidden');
+  mostrarToast('Informações do projeto atualizadas.');
+});
+
+/* ========================== FORM: CRONOGRAMA ========================== */
+const formCronograma = document.getElementById('formCronograma');
+function abrirFormCronograma(row){
+  document.getElementById('cronoId').value = row?.id || '';
+  document.getElementById('cEtapa').value = row?.etapa || '';
+  document.getElementById('cAtividade').value = row?.atividade || '';
+  document.getElementById('cResponsavel').value = row?.responsavel || '';
+  document.getElementById('cInicioPrevisto').value = row?.inicio_previsto || '';
+  document.getElementById('cTerminoPrevisto').value = row?.termino_previsto || '';
+  document.getElementById('cInicioReal').value = row?.inicio_real || '';
+  document.getElementById('cTerminoReal').value = row?.termino_real || '';
+  document.getElementById('cPercentual').value = row ? Math.round((Number(row.percentual_concluido)||0)*100) : 0;
+  document.getElementById('btnSalvarCronograma').textContent = row ? 'Salvar alterações' : 'Salvar atividade';
+  formCronograma.classList.remove('hidden');
+  formCronograma.scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('btnNovaAtividade').addEventListener('click', () => abrirFormCronograma(null));
+document.getElementById('btnCancelarCronograma').addEventListener('click', () => formCronograma.classList.add('hidden'));
+
+formCronograma.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('cronoId').value;
+  const payload = {
+    etapa: document.getElementById('cEtapa').value.trim(),
+    atividade: document.getElementById('cAtividade').value.trim(),
+    responsavel: document.getElementById('cResponsavel').value.trim() || null,
+    inicio_previsto: document.getElementById('cInicioPrevisto').value,
+    termino_previsto: document.getElementById('cTerminoPrevisto').value,
+    inicio_real: document.getElementById('cInicioReal').value || null,
+    termino_real: document.getElementById('cTerminoReal').value || null,
+    percentual_concluido: (parseFloat(document.getElementById('cPercentual').value) || 0) / 100,
+  };
+  let error;
+  if (id){
+    ({ error } = await supabaseClient.from('cronograma').update(payload).eq('id', id));
+  } else {
+    payload.ordem = cronograma.length ? Math.max(...cronograma.map(r => r.ordem || 0)) + 1 : 1;
+    ({ error } = await supabaseClient.from('cronograma').insert(payload));
+  }
+  if (error){ mostrarToast('Erro ao salvar atividade: ' + error.message, true); return; }
+  formCronograma.classList.add('hidden');
+  mostrarToast(id ? 'Atividade atualizada.' : 'Atividade adicionada.');
+  await carregarTudo();
+});
+
+document.getElementById('corpoCronograma').addEventListener('click', async (e) => {
+  const editId = e.target.dataset.editar;
+  const delId = e.target.dataset.excluir;
+  if (editId){
+    const row = cronograma.find(r => r.id === editId);
+    if (row) abrirFormCronograma(row);
+  } else if (delId){
+    if (!confirm('Excluir esta atividade do cronograma?')) return;
+    const { error } = await supabaseClient.from('cronograma').delete().eq('id', delId);
+    if (error){ mostrarToast('Erro ao excluir: ' + error.message, true); return; }
+    mostrarToast('Atividade excluída.');
+    await carregarTudo();
+  }
+});
+
+/* ======================= FILTROS, ORDENAÇÃO E VIEW (CRONOGRAMA) ======================= */
+document.getElementById('filtroEtapa').addEventListener('change', (e) => { cronoFiltro.etapa = e.target.value; renderCronograma(); });
+document.getElementById('filtroResponsavel').addEventListener('change', (e) => { cronoFiltro.responsavel = e.target.value; renderCronograma(); });
+document.getElementById('filtroStatus').addEventListener('change', (e) => { cronoFiltro.status = e.target.value; renderCronograma(); });
+
+document.querySelectorAll('th[data-key]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (cronoSort.key === key) cronoSort.dir = cronoSort.dir === 'asc' ? 'desc' : 'asc';
+    else { cronoSort.key = key; cronoSort.dir = 'asc'; }
+    renderCronograma();
+  });
+});
+
+document.querySelectorAll('.view-toggle .btn-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-toggle .btn-toggle').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const view = btn.dataset.view;
+    document.getElementById('viewTabela').classList.toggle('hidden', view !== 'tabela');
+    document.getElementById('viewGantt').classList.toggle('hidden', view !== 'gantt');
+  });
+});
+
+/* ============================ FORM: DIÁRIO ============================ */
+async function uploadFoto(file){
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const path = `${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error } = await supabaseClient.storage.from('obra-fotos').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  const { data } = supabaseClient.storage.from('obra-fotos').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+const formDiario = document.getElementById('formDiario');
+formDiario.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btnSubmit = formDiario.querySelector('button[type="submit"]');
+  const textoOriginal = btnSubmit.textContent;
+  btnSubmit.disabled = true;
+  try{
+    let fotoUrl = document.getElementById('dFotos').value.trim() || null;
+    const arquivo = document.getElementById('dFotoArquivo').files[0];
+    if (arquivo){
+      btnSubmit.textContent = 'Enviando foto...';
+      fotoUrl = await uploadFoto(arquivo);
+    }
+    const payload = {
+      data: document.getElementById('dData').value,
+      atividades: document.getElementById('dAtividades').value.trim(),
+      equipe: document.getElementById('dEquipe').value.trim() || null,
+      condicoes_climaticas: document.getElementById('dClima').value.trim() || null,
+      ocorrencias: document.getElementById('dOcorrencias').value.trim() || null,
+      fotos: fotoUrl,
+      observacoes: document.getElementById('dObservacoes').value.trim() || null,
+    };
+    btnSubmit.textContent = 'Salvando...';
+    const { error } = await supabaseClient.from('diario').insert(payload);
+    if (error) throw error;
+    formDiario.reset();
+    document.getElementById('dData').valueAsDate = new Date();
+    mostrarToast('Entrada registrada no diário.');
+    await carregarTudo();
+  } catch(err){
+    mostrarToast('Erro ao registrar: ' + err.message, true);
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = textoOriginal;
+  }
+});
+
+document.getElementById('listaDiario').addEventListener('click', async (e) => {
+  const delId = e.target.dataset.excluirDiario;
+  if (delId){
+    if (!confirm('Excluir este registro do diário?')) return;
+    const { error } = await supabaseClient.from('diario').delete().eq('id', delId);
+    if (error){ mostrarToast('Erro ao excluir: ' + error.message, true); return; }
+    mostrarToast('Registro excluído.');
+    await carregarTudo();
+  }
+});
+
+/* ======================= FILTROS E ORDENAÇÃO (DIÁRIO) ======================= */
+['diarioDataIni','diarioDataFim','diarioBusca','diarioOrdem'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderDiario);
+  document.getElementById(id).addEventListener('change', renderDiario);
+});
+
+/* ================================== INIT ================================== */
+document.getElementById('dData').valueAsDate = new Date();
+carregarTudo();
+</script>
+
+</body>
+</html>
