@@ -623,6 +623,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
           <div class="field">
             <label for="clStatus">Status</label>
             <select id="clStatus">
+              <option value="Não iniciado">Não iniciado</option>
               <option value="Pendente">Pendente</option>
               <option value="Em andamento">Em andamento</option>
               <option value="Concluído">Concluído</option>
@@ -648,6 +649,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
           <label for="filtroChecklistStatus">Status</label>
           <select id="filtroChecklistStatus">
             <option value="">Todos os Status</option>
+            <option value="Não iniciado">Não iniciado</option>
             <option value="Pendente">Pendente</option>
             <option value="Em andamento">Em andamento</option>
             <option value="Concluído">Concluído</option>
@@ -766,9 +768,10 @@ const STATUS_INFO = {
   'Não iniciado':['badge-naoiniciado', '#6B675E'],
 };
 const CHECKLIST_STATUS_INFO = {
-  'Concluído':    'badge-concluido',
+  'Não iniciado': 'badge-naoiniciado',
+  'Pendente':     'badge-atrasado',
   'Em andamento': 'badge-andamento',
-  'Pendente':     'badge-naoiniciado',
+  'Concluído':    'badge-concluido',
 };
 
 function calcIndicadores(){
@@ -1368,7 +1371,7 @@ function abrirFormChecklist(row){
   document.getElementById('clResponsavel').value = row?.responsavel || '';
   document.getElementById('clInicioPrevisto').value = row?.inicio_previsto || '';
   document.getElementById('clTerminoPrevisto').value = row?.termino_previsto || '';
-  document.getElementById('clStatus').value = row?.status || 'Pendente';
+  document.getElementById('clStatus').value = row?.status || 'Não iniciado';
   document.getElementById('clObservacao').value = row?.observacao || '';
   document.getElementById('btnSalvarChecklist').textContent = row ? 'Salvar alterações' : 'Salvar ação';
   formChecklist.classList.remove('hidden');
