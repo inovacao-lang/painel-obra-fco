@@ -299,6 +299,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .relatorio-corpo .bloco-corpo p{ margin:4px 0 4px 12px; font-size:0.92rem; line-height:1.5; }
 .relatorio-corpo .rotulo{ font-weight:700; }
 .relatorio-corpo .alerta{ color:#A10A37; }
+.relatorio-corpo .divisor-sub{ border:none; border-top:1px dashed #ccc; margin:12px 12px; }
 .relatorio-rodape{ color:#A10A37; font-size:0.82rem; padding:0 40px 28px; margin:0; }
 
 @media print{
@@ -1426,18 +1427,30 @@ function gerarRelatorioDiario(){
     ? `Período: ${dIni ? formatDateBR(dIni) : '—'} a ${dFim ? formatDateBR(dFim) : '—'}`
     : `Período: ${formatDateBR(entradas[0].data)} a ${formatDateBR(entradas[entradas.length - 1].data)}`;
 
-  const blocos = entradas.map(e => {
-    const semOcorrencia = !e.ocorrencias || e.ocorrencias.trim().toLowerCase() === 'nenhuma';
-    return `
-      <div class="bloco">
-        <div class="bloco-titulo">${esc(formatDiaSemana(e.data))} (${formatDateBR(e.data)})${e.condicoes_climaticas ? ' — ' + esc(e.condicoes_climaticas) : ''}</div>
-        <div class="bloco-corpo">
+  const grupos = [];
+  entradas.forEach(e => {
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo.data === e.data) ultimo.itens.push(e);
+    else grupos.push({ data: e.data, clima: e.condicoes_climaticas, itens: [e] });
+  });
+
+  const blocos = grupos.map(g => {
+    const registros = g.itens.map((e, i) => {
+      const semOcorrencia = !e.ocorrencias || e.ocorrencias.trim().toLowerCase() === 'nenhuma';
+      const separador = i > 0 ? '<hr class="divisor-sub">' : '';
+      return `
+        ${separador}
+        <div class="sub-registro">
           <p><span class="rotulo">Atividades Realizadas:</span> ${esc(e.atividades) || '—'}</p>
           <p><span class="rotulo">Equipe:</span> ${esc(e.equipe) || '—'}</p>
           <p class="${semOcorrencia ? '' : 'alerta'}"><span class="rotulo">Ocorrências / Problemas:</span> ${esc(e.ocorrencias) || 'Nenhuma'}</p>
           <p><span class="rotulo">Observações:</span> ${esc(e.observacoes) || '—'}</p>
-          ${e.fotos ? `<p><span class="rotulo">Fotos:</span> ${esc(e.fotos)}</p>` : ''}
-        </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="bloco">
+        <div class="bloco-titulo">${esc(formatDiaSemana(g.data))} (${formatDateBR(g.data)})${g.clima ? ' — ' + esc(g.clima) : ''}</div>
+        <div class="bloco-corpo">${registros}</div>
       </div>`;
   }).join('');
 
