@@ -609,16 +609,16 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
             <input type="text" id="clAcao" required placeholder="Ex.: Transferir link de internet para a nova unidade">
           </div>
           <div class="field">
-            <label for="clSetor">Setor</label>
-            <input type="text" id="clSetor" placeholder="Ex.: TI">
-          </div>
-          <div class="field">
             <label for="clResponsavel">Responsável</label>
             <input type="text" id="clResponsavel">
           </div>
           <div class="field">
-            <label for="clPrazo">Prazo</label>
-            <input type="date" id="clPrazo">
+            <label for="clInicioPrevisto">Início Previsto</label>
+            <input type="date" id="clInicioPrevisto">
+          </div>
+          <div class="field">
+            <label for="clTerminoPrevisto">Término Previsto</label>
+            <input type="date" id="clTerminoPrevisto">
           </div>
           <div class="field">
             <label for="clStatus">Status</label>
@@ -641,8 +641,8 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 
       <div class="filters-row">
         <div class="field">
-          <label for="filtroChecklistSetor">Setor</label>
-          <select id="filtroChecklistSetor"><option value="">Todos os Setores</option></select>
+          <label for="filtroChecklistResponsavel">Responsável</label>
+          <select id="filtroChecklistResponsavel"><option value="">Todos os Responsáveis</option></select>
         </div>
         <div class="field">
           <label for="filtroChecklistStatus">Status</label>
@@ -659,7 +659,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
         <table>
           <thead>
             <tr>
-              <th>Ação Detalhada</th><th>Setor</th><th>Responsável</th><th>Prazo</th><th>Status</th><th>Observação</th><th>Ações</th>
+              <th>Ação Detalhada</th><th>Responsável</th><th>Início Previsto</th><th>Término Previsto</th><th>Status</th><th>Observação</th><th>Ações</th>
             </tr>
           </thead>
           <tbody id="corpoChecklist"></tbody>
@@ -696,7 +696,7 @@ let diario = [];
 let checklist = [];
 let cronoSort = { key: 'ordem', dir: 'asc' };
 let cronoFiltro = { etapa: '', responsavel: '', status: '' };
-let checklistFiltro = { setor: '', status: '' };
+let checklistFiltro = { responsavel: '', status: '' };
 
 /* ============================== UTILITÁRIOS ============================== */
 function esc(str){
@@ -851,15 +851,15 @@ function atualizarSetasOrdenacao(){
 }
 
 function popularFiltrosChecklist(){
-  const selSetor = document.getElementById('filtroChecklistSetor');
-  const setores = [...new Set(checklist.map(r => r.setor).filter(Boolean))];
-  const curSetor = selSetor.value;
-  selSetor.innerHTML = '<option value="">Todos os Setores</option>' + setores.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-  selSetor.value = setores.includes(curSetor) ? curSetor : '';
+  const selResp = document.getElementById('filtroChecklistResponsavel');
+  const responsaveis = [...new Set(checklist.map(r => r.responsavel).filter(Boolean))];
+  const curResp = selResp.value;
+  selResp.innerHTML = '<option value="">Todos os Responsáveis</option>' + responsaveis.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+  selResp.value = responsaveis.includes(curResp) ? curResp : '';
 }
 function aplicarFiltrosChecklist(){
   return checklist.filter(r =>
-    (!checklistFiltro.setor || r.setor === checklistFiltro.setor) &&
+    (!checklistFiltro.responsavel || r.responsavel === checklistFiltro.responsavel) &&
     (!checklistFiltro.status || r.status === checklistFiltro.status)
   );
 }
@@ -1110,13 +1110,13 @@ function renderChecklist(){
   const hoje = hojeISO();
   filtrados.forEach(r => {
     const classe = CHECKLIST_STATUS_INFO[r.status] || 'badge-naoiniciado';
-    const atrasado = r.prazo && r.status !== 'Concluído' && parseISO(r.prazo) < hoje;
+    const atrasado = r.termino_previsto && r.status !== 'Concluído' && parseISO(r.termino_previsto) < hoje;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${esc(r.acao_detalhada)}</td>
-      <td>${esc(r.setor) || '—'}</td>
       <td>${esc(r.responsavel) || '—'}</td>
-      <td class="${atrasado ? 'atraso-pos' : ''}">${formatDateBR(r.prazo)}</td>
+      <td>${formatDateBR(r.inicio_previsto)}</td>
+      <td class="${atrasado ? 'atraso-pos' : ''}">${formatDateBR(r.termino_previsto)}</td>
       <td><span class="badge ${classe}">${esc(r.status)}</span></td>
       <td>${esc(r.observacao) || '—'}</td>
       <td class="row-actions">
@@ -1145,7 +1145,7 @@ async function carregarTudo(){
       supabaseClient.from('projeto').select('*').eq('id', 1).single(),
       supabaseClient.from('cronograma').select('*').order('ordem', {ascending:true}).order('created_at', {ascending:true}),
       supabaseClient.from('diario').select('*').order('data', {ascending:false}).order('created_at', {ascending:false}),
-      supabaseClient.from('checklist_mudanca').select('*').order('ordem', {ascending:true}).order('created_at', {ascending:true}),
+      supabaseClient.from('checklist_mudanca').select('*').order('inicio_previsto', {ascending:true, nullsFirst:false}).order('termino_previsto', {ascending:true, nullsFirst:false}),
     ]);
     if (e1) throw e1;
     if (e2) throw e2;
@@ -1365,9 +1365,9 @@ const formChecklist = document.getElementById('formChecklist');
 function abrirFormChecklist(row){
   document.getElementById('clId').value = row?.id || '';
   document.getElementById('clAcao').value = row?.acao_detalhada || '';
-  document.getElementById('clSetor').value = row?.setor || '';
   document.getElementById('clResponsavel').value = row?.responsavel || '';
-  document.getElementById('clPrazo').value = row?.prazo || '';
+  document.getElementById('clInicioPrevisto').value = row?.inicio_previsto || '';
+  document.getElementById('clTerminoPrevisto').value = row?.termino_previsto || '';
   document.getElementById('clStatus').value = row?.status || 'Pendente';
   document.getElementById('clObservacao').value = row?.observacao || '';
   document.getElementById('btnSalvarChecklist').textContent = row ? 'Salvar alterações' : 'Salvar ação';
@@ -1382,9 +1382,9 @@ formChecklist.addEventListener('submit', async (e) => {
   const id = document.getElementById('clId').value;
   const payload = {
     acao_detalhada: document.getElementById('clAcao').value.trim(),
-    setor: document.getElementById('clSetor').value.trim() || null,
     responsavel: document.getElementById('clResponsavel').value.trim() || null,
-    prazo: document.getElementById('clPrazo').value || null,
+    inicio_previsto: document.getElementById('clInicioPrevisto').value || null,
+    termino_previsto: document.getElementById('clTerminoPrevisto').value || null,
     status: document.getElementById('clStatus').value,
     observacao: document.getElementById('clObservacao').value.trim() || null,
   };
@@ -1393,7 +1393,6 @@ formChecklist.addEventListener('submit', async (e) => {
     payload.updated_at = new Date().toISOString();
     ({ error } = await supabaseClient.from('checklist_mudanca').update(payload).eq('id', id));
   } else {
-    payload.ordem = checklist.length ? Math.max(...checklist.map(r => r.ordem || 0)) + 1 : 1;
     ({ error } = await supabaseClient.from('checklist_mudanca').insert(payload));
   }
   if (error){ mostrarToast('Erro ao salvar ação: ' + error.message, true); return; }
@@ -1417,7 +1416,7 @@ document.getElementById('corpoChecklist').addEventListener('click', async (e) =>
   }
 });
 
-document.getElementById('filtroChecklistSetor').addEventListener('change', (e) => { checklistFiltro.setor = e.target.value; renderChecklist(); });
+document.getElementById('filtroChecklistResponsavel').addEventListener('change', (e) => { checklistFiltro.responsavel = e.target.value; renderChecklist(); });
 document.getElementById('filtroChecklistStatus').addEventListener('change', (e) => { checklistFiltro.status = e.target.value; renderChecklist(); });
 
 /* ================================== INIT ================================== */
