@@ -260,7 +260,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .diario-ocorrencia.nenhuma{ color:var(--cinza-texto); font-weight:400; }
 .diario-foto{ font-size:0.82rem; color:var(--azul-vivo); word-break:break-all; }
 .diario-foto-thumb{ margin-top:8px; }
-.diario-foto-thumb img{ max-width:180px; max-height:130px; border-radius:8px; border:1px solid var(--cinza-borda); object-fit:cover; display:block; }
+.diario-foto-thumb img{ width:100%; max-width:420px; max-height:320px; border-radius:8px; border:1px solid var(--cinza-borda); object-fit:cover; display:block; cursor:zoom-in; }
 
 .hidden{ display:none !important; }
 .empty-state{ color:var(--cinza-texto); font-size:0.9rem; padding:16px 0; text-align:center; }
@@ -603,7 +603,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
     <div class="section-card">
       <div class="section-header">
         <h2>Histórico do Diário</h2>
-        <button class="btn btn-secondary btn-sm" id="btnGerarRelatorio">Gerar Relatório</button>
+        <button class="btn btn-primary btn-sm" id="btnGerarRelatorio">Gerar Relatório</button>
       </div>
       <p class="section-hint">O relatório usa o período selecionado nos filtros "De" / "Até" abaixo (deixe em branco para incluir todo o histórico).</p>
       <div class="filters-row">
