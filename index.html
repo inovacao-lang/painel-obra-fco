@@ -46,7 +46,7 @@ body{
 h1,h2,h3{ color: var(--azul-marinho); margin:0 0 4px; letter-spacing:-0.01em; }
 
 .container{
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 32px 24px 60px;
 }
@@ -173,8 +173,8 @@ h1,h2,h3{ color: var(--azul-marinho); margin:0 0 4px; letter-spacing:-0.01em; }
 /* ================================ TABELAS =================================== */
 .table-wrap{ overflow-x:auto; }
 table{ width:100%; border-collapse:collapse; font-size:0.88rem; }
-th, td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--cinza-borda); white-space:nowrap; }
-th{ color:var(--cinza-texto); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.03em; font-weight:700; }
+th, td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--cinza-borda); white-space:normal; word-break:break-word; }
+th{ color:var(--cinza-texto); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.03em; font-weight:700; white-space:nowrap; }
 th[data-key]{ cursor:pointer; user-select:none; }
 th[data-key]:hover{ color:var(--azul-marinho); }
 .sort-arrow{ display:inline-block; width:10px; font-size:0.7rem; }
@@ -240,7 +240,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .btn-sm{ padding:6px 12px; font-size:0.76rem; }
 .btn:disabled{ opacity:0.6; cursor:not-allowed; }
 
-.row-actions{ display:flex; gap:6px; }
+.row-actions{ display:flex; gap:6px; white-space:nowrap; }
 
 /* ============================== DIÁRIO DA OBRA =============================== */
 .diario-lista{ display:flex; flex-direction:column; gap:16px; }
