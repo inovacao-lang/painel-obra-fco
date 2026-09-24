@@ -46,7 +46,7 @@ body{
 h1,h2,h3{ color: var(--azul-marinho); margin:0 0 4px; letter-spacing:-0.01em; }
 
 .container{
-  max-width: 1440px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 32px 24px 60px;
 }
@@ -181,6 +181,10 @@ th[data-key]:hover{ color:var(--azul-marinho); }
 tbody tr:hover{ background: var(--creme); }
 td.etapa{ font-weight:700; color:var(--azul-marinho); }
 td.atraso-pos{ color:var(--vinho); font-weight:700; }
+
+.table-compacta{ font-size:0.8rem; }
+.table-compacta th, .table-compacta td{ padding:7px 8px; }
+.table-compacta th{ white-space:normal; word-break:normal; line-height:1.25; vertical-align:bottom; }
 
 /* ============================== FILTROS =============================== */
 .filters-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:flex-end; }
@@ -523,7 +527,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
       </div>
 
       <div class="table-wrap" id="viewTabela">
-        <table>
+        <table class="table-compacta">
           <thead>
             <tr>
               <th data-key="etapa">Etapa <span class="sort-arrow" data-key="etapa"></span></th>
