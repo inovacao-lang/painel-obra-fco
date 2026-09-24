@@ -275,6 +275,39 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 .toast.erro{ background:var(--vinho); }
 
+/* ============================== RELATÓRIO DIÁRIO ============================== */
+.relatorio-overlay{
+  position:fixed; inset:0; background:#f0f0f0; z-index:1000;
+  overflow-y:auto; padding:24px;
+}
+.relatorio-acoes{
+  max-width:800px; margin:0 auto 16px; display:flex; justify-content:flex-end; gap:10px;
+}
+.relatorio-folha{
+  max-width:800px; margin:0 auto; background:#fff; color:#1A1A1A;
+  font-family: Arial, Helvetica, sans-serif; box-shadow:0 4px 20px rgba(0,0,0,0.15);
+  border-radius:8px; overflow:hidden;
+}
+.relatorio-cabecalho{ background:#0F2B56; color:#fff; padding:28px 40px; }
+.relatorio-cabecalho h1{ margin:0; font-size:1.6rem; letter-spacing:0.02em; color:#fff; }
+.relatorio-cabecalho p{ margin:8px 0 0; font-size:0.95rem; opacity:0.9; }
+.relatorio-corpo{ padding:28px 40px; }
+.relatorio-corpo h2{ color:#0F2B56; font-size:1.2rem; margin:0 0 10px; }
+.relatorio-corpo hr{ border:none; border-top:1px solid #ccc; margin:16px 0; }
+.relatorio-periodo{ color:#A10A37; font-size:0.9rem; margin:0; }
+.relatorio-corpo .bloco-titulo{ background:#E8EDF5; color:#0F2B56; font-weight:700; padding:8px 12px; margin:18px 0 8px; font-size:0.95rem; border-radius:4px; }
+.relatorio-corpo .bloco-corpo p{ margin:4px 0 4px 12px; font-size:0.92rem; line-height:1.5; }
+.relatorio-corpo .rotulo{ font-weight:700; }
+.relatorio-corpo .alerta{ color:#A10A37; }
+.relatorio-rodape{ color:#A10A37; font-size:0.82rem; padding:0 40px 28px; margin:0; }
+
+@media print{
+  body > *:not(.relatorio-overlay){ display:none !important; }
+  .relatorio-overlay{ position:static; padding:0; background:#fff; }
+  .no-print{ display:none !important; }
+  .relatorio-folha{ box-shadow:none; border-radius:0; max-width:none; }
+}
+
 /* ================================= RODAPÉ =================================== */
 .app-footer{ max-width:1100px; margin:0 auto; padding:8px 24px 40px; text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.65); line-height:1.8; }
 .app-footer strong{ color:#fff; }
@@ -567,7 +600,11 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
     </div>
 
     <div class="section-card">
-      <h2>Histórico do Diário</h2>
+      <div class="section-header">
+        <h2>Histórico do Diário</h2>
+        <button class="btn btn-secondary btn-sm" id="btnGerarRelatorio">Gerar Relatório</button>
+      </div>
+      <p class="section-hint">O relatório usa o período selecionado nos filtros "De" / "Até" abaixo (deixe em branco para incluir todo o histórico).</p>
       <div class="filters-row">
         <div class="field">
           <label for="diarioDataIni">De</label>
@@ -679,6 +716,14 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 </footer>
 
 <div class="toast" id="toast"></div>
+
+<div class="relatorio-overlay hidden" id="relatorioOverlay">
+  <div class="relatorio-acoes no-print">
+    <button class="btn btn-primary" id="btnImprimirRelatorio">Imprimir / Salvar PDF</button>
+    <button class="btn btn-secondary" id="btnFecharRelatorio">Fechar</button>
+  </div>
+  <div class="relatorio-folha" id="relatorioConteudo"></div>
+</div>
 
 <script>
 /* =============================================================================
@@ -1356,6 +1401,71 @@ document.getElementById('listaDiario').addEventListener('click', async (e) => {
     await carregarTudo();
   }
 });
+
+/* ============================ RELATÓRIO (DIÁRIO) ============================ */
+function formatDiaSemana(iso){
+  if (!iso) return '';
+  const d = parseISO(iso);
+  const nome = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+  return nome.charAt(0).toUpperCase() + nome.slice(1);
+}
+function gerarRelatorioDiario(){
+  const dIni = document.getElementById('diarioDataIni').value;
+  const dFim = document.getElementById('diarioDataFim').value;
+  const entradas = diario
+    .filter(e => (!dIni || e.data >= dIni) && (!dFim || e.data <= dFim))
+    .slice()
+    .sort((a, b) => a.data.localeCompare(b.data));
+
+  if (!entradas.length){
+    mostrarToast('Nenhum registro do diário encontrado no período selecionado.', true);
+    return;
+  }
+
+  const periodoTexto = dIni || dFim
+    ? `Período: ${dIni ? formatDateBR(dIni) : '—'} a ${dFim ? formatDateBR(dFim) : '—'}`
+    : `Período: ${formatDateBR(entradas[0].data)} a ${formatDateBR(entradas[entradas.length - 1].data)}`;
+
+  const blocos = entradas.map(e => {
+    const semOcorrencia = !e.ocorrencias || e.ocorrencias.trim().toLowerCase() === 'nenhuma';
+    return `
+      <div class="bloco">
+        <div class="bloco-titulo">${esc(formatDiaSemana(e.data))} (${formatDateBR(e.data)})${e.condicoes_climaticas ? ' — ' + esc(e.condicoes_climaticas) : ''}</div>
+        <div class="bloco-corpo">
+          <p><span class="rotulo">Atividades Realizadas:</span> ${esc(e.atividades) || '—'}</p>
+          <p><span class="rotulo">Equipe:</span> ${esc(e.equipe) || '—'}</p>
+          <p class="${semOcorrencia ? '' : 'alerta'}"><span class="rotulo">Ocorrências / Problemas:</span> ${esc(e.ocorrencias) || 'Nenhuma'}</p>
+          <p><span class="rotulo">Observações:</span> ${esc(e.observacoes) || '—'}</p>
+          ${e.fotos ? `<p><span class="rotulo">Fotos:</span> ${esc(e.fotos)}</p>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  const nomeProjeto = projeto?.nome || 'Painel de Controle da Obra';
+  const endereco = projeto?.endereco ? esc(projeto.endereco) + ' | ' : '';
+  const agora = new Date().toLocaleString('pt-BR');
+
+  document.getElementById('relatorioConteudo').innerHTML = `
+    <div class="relatorio-cabecalho">
+      <h1>RELATÓRIO DIÁRIO DE OBRA</h1>
+      <p>${esc(nomeProjeto)} | Gerado em ${agora}</p>
+    </div>
+    <div class="relatorio-corpo">
+      <h2>Resumo de Atividades</h2>
+      <p class="relatorio-periodo">${endereco}${periodoTexto}</p>
+      <hr>
+      ${blocos}
+    </div>
+    <p class="relatorio-rodape">OBS: relatório gerado automaticamente a partir dos registros do Diário da Obra.</p>
+  `;
+  document.getElementById('relatorioOverlay').classList.remove('hidden');
+}
+
+document.getElementById('btnGerarRelatorio').addEventListener('click', gerarRelatorioDiario);
+document.getElementById('btnFecharRelatorio').addEventListener('click', () => {
+  document.getElementById('relatorioOverlay').classList.add('hidden');
+});
+document.getElementById('btnImprimirRelatorio').addEventListener('click', () => window.print());
 
 /* ======================= FILTROS E ORDENAÇÃO (DIÁRIO) ======================= */
 ['diarioDataIni','diarioDataFim','diarioBusca','diarioOrdem'].forEach(id => {
