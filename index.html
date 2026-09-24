@@ -467,11 +467,11 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
           </div>
           <div class="field">
             <label for="cInicioPrevisto">Início Previsto</label>
-            <input type="date" id="cInicioPrevisto" required>
+            <input type="date" id="cInicioPrevisto">
           </div>
           <div class="field">
             <label for="cTerminoPrevisto">Término Previsto</label>
-            <input type="date" id="cTerminoPrevisto" required>
+            <input type="date" id="cTerminoPrevisto">
           </div>
           <div class="field">
             <label for="cInicioReal">Início Real</label>
@@ -484,6 +484,10 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
           <div class="field">
             <label for="cPercentual">% Concluído</label>
             <input type="number" id="cPercentual" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="field span-2">
+            <label for="cObservacao">Observação</label>
+            <textarea id="cObservacao"></textarea>
           </div>
         </div>
         <div class="actions-row">
@@ -533,6 +537,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
               <th data-key="percentual_concluido">% Concluído <span class="sort-arrow" data-key="percentual_concluido"></span></th>
               <th data-key="status">Status <span class="sort-arrow" data-key="status"></span></th>
               <th data-key="atraso">Atraso (dias) <span class="sort-arrow" data-key="atraso"></span></th>
+              <th>Observação</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -1003,7 +1008,7 @@ function renderCronogramaTabela(linhas){
   const corpo = document.getElementById('corpoCronograma');
   corpo.innerHTML = '';
   if (!linhas.length){
-    corpo.innerHTML = `<tr><td colspan="12" class="empty-state">Nenhuma atividade encontrada com os filtros atuais.</td></tr>`;
+    corpo.innerHTML = `<tr><td colspan="13" class="empty-state">Nenhuma atividade encontrada com os filtros atuais.</td></tr>`;
     return;
   }
   linhas.forEach(r => {
@@ -1021,6 +1026,7 @@ function renderCronogramaTabela(linhas){
       <td>${formatPercent(Number(r.percentual_concluido) || 0)}</td>
       <td><span class="badge ${classe}">${esc(r.status) || '—'}</span></td>
       <td class="${r.atraso > 0 ? 'atraso-pos' : ''}">${r.atraso ?? '—'}</td>
+      <td>${esc(r.observacao) || '—'}</td>
       <td class="row-actions">
         <button class="btn btn-secondary btn-sm" data-editar="${r.id}">Editar</button>
         <button class="btn btn-danger btn-sm" data-excluir="${r.id}">Excluir</button>
@@ -1274,6 +1280,7 @@ function abrirFormCronograma(row){
   document.getElementById('cInicioReal').value = row?.inicio_real || '';
   document.getElementById('cTerminoReal').value = row?.termino_real || '';
   document.getElementById('cPercentual').value = row ? Math.round((Number(row.percentual_concluido)||0)*100) : 0;
+  document.getElementById('cObservacao').value = row?.observacao || '';
   document.getElementById('btnSalvarCronograma').textContent = row ? 'Salvar alterações' : 'Salvar atividade';
   formCronograma.classList.remove('hidden');
   formCronograma.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1288,11 +1295,12 @@ formCronograma.addEventListener('submit', async (e) => {
     etapa: document.getElementById('cEtapa').value.trim(),
     atividade: document.getElementById('cAtividade').value.trim(),
     responsavel: document.getElementById('cResponsavel').value.trim() || null,
-    inicio_previsto: document.getElementById('cInicioPrevisto').value,
-    termino_previsto: document.getElementById('cTerminoPrevisto').value,
+    inicio_previsto: document.getElementById('cInicioPrevisto').value || null,
+    termino_previsto: document.getElementById('cTerminoPrevisto').value || null,
     inicio_real: document.getElementById('cInicioReal').value || null,
     termino_real: document.getElementById('cTerminoReal').value || null,
     percentual_concluido: (parseFloat(document.getElementById('cPercentual').value) || 0) / 100,
+    observacao: document.getElementById('cObservacao').value.trim() || null,
   };
   let error;
   if (id){
