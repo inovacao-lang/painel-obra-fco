@@ -195,6 +195,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .table-compacta{ font-size:0.8rem; }
 .table-compacta th, .table-compacta td{ padding:7px 8px; }
 .table-compacta th{ white-space:normal; word-break:normal; line-height:1.25; vertical-align:bottom; }
+.table-compacta th:first-child, .table-compacta td.etapa{ min-width:150px; }
 
 /* ============================== FILTROS =============================== */
 .filters-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:flex-end; }
@@ -316,6 +317,11 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .relatorio-corpo .alerta{ color:#A10A37; }
 .relatorio-corpo .divisor-sub{ border:none; border-top:1px dashed #ccc; margin:12px 12px; }
 .relatorio-rodape{ color:#A10A37; font-size:0.82rem; padding:0 40px 28px; margin:0; }
+.relatorio-folha.larga{ max-width:1100px; }
+.relatorio-tabela{ width:100%; border-collapse:collapse; font-size:0.8rem; margin-top:8px; }
+.relatorio-tabela th, .relatorio-tabela td{ border:1px solid #ddd; padding:6px 8px; text-align:left; vertical-align:top; }
+.relatorio-tabela th{ background:#E8EDF5; color:#0F2B56; }
+.relatorio-tabela .relatorio-etapa-linha td{ background:#F5F3EF; font-weight:700; color:#0F2B56; }
 
 @media print{
   body > *:not(.relatorio-overlay){ display:none !important; }
@@ -488,7 +494,10 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
     <div class="section-card">
       <div class="section-header">
         <h2>Cronograma Detalhado</h2>
-        <button class="btn btn-primary btn-sm" id="btnNovaAtividade">+ Nova Atividade</button>
+        <div class="actions-row" style="margin:0;">
+          <button class="btn btn-secondary btn-sm" id="btnRelatorioCronograma">Relatório desta aba</button>
+          <button class="btn btn-primary btn-sm" id="btnNovaAtividade">+ Nova Atividade</button>
+        </div>
       </div>
       <p class="section-hint">Duração, % Concluído médio, Status e Atraso são calculados automaticamente a partir das datas e do % concluído informado.</p>
 
@@ -556,6 +565,10 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
             <option value="Concluído">Concluído</option>
             <option value="Atrasado">Atrasado</option>
           </select>
+        </div>
+        <div class="field grow">
+          <label for="cronoBusca">Buscar</label>
+          <input type="text" id="cronoBusca" placeholder="Buscar em etapa, atividade, responsável, observação...">
         </div>
       </div>
 
@@ -806,7 +819,7 @@ let cronograma = [];
 let diario = [];
 let checklist = [];
 let cronoSort = { key: 'ordem', dir: 'asc' };
-let cronoFiltro = { etapa: '', responsavel: '', status: '' };
+let cronoFiltro = { etapa: '', responsavel: '', status: '', busca: '' };
 let checklistFiltro = { responsavel: '', status: '' };
 
 /* ============================== UTILITÁRIOS ============================== */
@@ -927,10 +940,12 @@ function calcIndicadores(){
 
 /* ============================ FILTROS E ORDENAÇÃO ============================ */
 function aplicarFiltrosCronograma(linhas){
+  const busca = cronoFiltro.busca.trim().toLowerCase();
   return linhas.filter(r =>
     (!cronoFiltro.etapa || r.etapa === cronoFiltro.etapa) &&
     (!cronoFiltro.responsavel || r.responsavel === cronoFiltro.responsavel) &&
-    (!cronoFiltro.status || r.status === cronoFiltro.status)
+    (!cronoFiltro.status || r.status === cronoFiltro.status) &&
+    (!busca || [r.etapa, r.atividade, r.responsavel, r.observacao].filter(Boolean).join(' ').toLowerCase().includes(busca))
   );
 }
 function ordenarLinhas(linhas){
@@ -1391,6 +1406,7 @@ document.getElementById('corpoCronograma').addEventListener('click', async (e) =
 document.getElementById('filtroEtapa').addEventListener('change', (e) => { cronoFiltro.etapa = e.target.value; renderCronograma(); });
 document.getElementById('filtroResponsavel').addEventListener('change', (e) => { cronoFiltro.responsavel = e.target.value; renderCronograma(); });
 document.getElementById('filtroStatus').addEventListener('change', (e) => { cronoFiltro.status = e.target.value; renderCronograma(); });
+document.getElementById('cronoBusca').addEventListener('input', (e) => { cronoFiltro.busca = e.target.value; renderCronograma(); });
 
 document.querySelectorAll('th[data-key]').forEach(th => {
   th.addEventListener('click', () => {
@@ -1537,10 +1553,76 @@ function gerarRelatorioDiario(){
     </div>
     <p class="relatorio-rodape">OBS: relatório gerado automaticamente a partir dos registros do Diário da Obra.</p>
   `;
+  document.getElementById('relatorioConteudo').classList.remove('larga');
+  document.getElementById('relatorioOverlay').classList.remove('hidden');
+}
+
+function gerarRelatorioCronograma(){
+  const ind = calcIndicadores();
+  const filtradas = ordenarLinhas(aplicarFiltrosCronograma(ind.linhas));
+
+  if (!filtradas.length){
+    mostrarToast('Nenhuma atividade encontrada com os filtros atuais.', true);
+    return;
+  }
+
+  const linhasHtml = [];
+  let etapaAtual = null;
+  filtradas.forEach(r => {
+    if (r.etapa !== etapaAtual){
+      etapaAtual = r.etapa;
+      linhasHtml.push(`<tr class="relatorio-etapa-linha"><td colspan="8">${esc(etapaAtual) || '—'}</td></tr>`);
+    }
+    linhasHtml.push(`
+      <tr>
+        <td>${esc(r.atividade)}</td>
+        <td>${esc(r.responsavel) || '—'}</td>
+        <td>${formatDateBR(r.inicio_previsto)}</td>
+        <td>${formatDateBR(r.termino_previsto)}</td>
+        <td>${formatPercent(Number(r.percentual_concluido) || 0)}</td>
+        <td>${esc(r.status) || '—'}</td>
+        <td>${r.atraso ?? '—'}</td>
+        <td>${esc(r.observacao) || '—'}</td>
+      </tr>`);
+  });
+
+  const nomeProjeto = projeto?.nome || 'Painel de Controle da Obra';
+  const endereco = projeto?.endereco ? esc(projeto.endereco) + ' | ' : '';
+  const agora = new Date().toLocaleString('pt-BR');
+  const filtrosTexto = [
+    cronoFiltro.etapa ? `Etapa: ${esc(cronoFiltro.etapa)}` : null,
+    cronoFiltro.responsavel ? `Responsável: ${esc(cronoFiltro.responsavel)}` : null,
+    cronoFiltro.status ? `Status: ${esc(cronoFiltro.status)}` : null,
+    cronoFiltro.busca ? `Busca: "${esc(cronoFiltro.busca)}"` : null
+  ].filter(Boolean).join(' | ') || 'Todas as atividades';
+
+  document.getElementById('relatorioConteudo').innerHTML = `
+    <div class="relatorio-cabecalho">
+      <h1>RELATÓRIO DE CRONOGRAMA</h1>
+      <p>${esc(nomeProjeto)} | Gerado em ${agora}</p>
+    </div>
+    <div class="relatorio-corpo">
+      <h2>Cronograma Detalhado</h2>
+      <p class="relatorio-periodo">${endereco}${filtrosTexto} — ${filtradas.length} atividade(s)</p>
+      <hr>
+      <table class="relatorio-tabela">
+        <thead>
+          <tr>
+            <th>Atividade</th><th>Responsável</th><th>Início Prev.</th><th>Término Prev.</th>
+            <th>% Concl.</th><th>Status</th><th>Atraso (dias)</th><th>Observação</th>
+          </tr>
+        </thead>
+        <tbody>${linhasHtml.join('')}</tbody>
+      </table>
+    </div>
+    <p class="relatorio-rodape">OBS: relatório gerado automaticamente a partir dos dados do Cronograma, respeitando os filtros aplicados na tela.</p>
+  `;
+  document.getElementById('relatorioConteudo').classList.add('larga');
   document.getElementById('relatorioOverlay').classList.remove('hidden');
 }
 
 document.getElementById('btnGerarRelatorio').addEventListener('click', gerarRelatorioDiario);
+document.getElementById('btnRelatorioCronograma').addEventListener('click', gerarRelatorioCronograma);
 document.getElementById('btnFecharRelatorio').addEventListener('click', () => {
   document.getElementById('relatorioOverlay').classList.add('hidden');
 });
