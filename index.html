@@ -196,6 +196,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
 .table-compacta th, .table-compacta td{ padding:7px 8px; }
 .table-compacta th{ white-space:normal; word-break:normal; line-height:1.25; vertical-align:bottom; }
 .table-compacta th:first-child, .table-compacta td.etapa{ min-width:150px; }
+#tabelaResumoEtapa th:first-child, #tabelaResumoEtapa td:first-child{ min-width:180px; }
 
 /* ============================== FILTROS =============================== */
 .filters-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:flex-end; }
@@ -474,7 +475,7 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
     <div class="section-card">
       <h2>Resumo por Etapa</h2>
       <div class="table-wrap">
-        <table>
+        <table id="tabelaResumoEtapa">
           <thead>
             <tr>
               <th>Etapa</th><th>Qtd. Atividades</th><th>% Concluído Médio</th>
