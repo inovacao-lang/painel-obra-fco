@@ -723,6 +723,10 @@ td.atraso-pos{ color:var(--vinho); font-weight:700; }
             <input type="text" id="clResponsavel">
           </div>
           <div class="field">
+            <label for="clEmail">E-mail do responsável (para avisos)</label>
+            <input type="email" id="clEmail" placeholder="nome@nossafco.com.br">
+          </div>
+          <div class="field">
             <label for="clInicioPrevisto">Início Previsto</label>
             <input type="date" id="clInicioPrevisto">
           </div>
@@ -1643,6 +1647,7 @@ function abrirFormChecklist(row){
   document.getElementById('clId').value = row?.id || '';
   document.getElementById('clAcao').value = row?.acao_detalhada || '';
   document.getElementById('clResponsavel').value = row?.responsavel || '';
+  document.getElementById('clEmail').value = row?.email_responsavel || '';
   document.getElementById('clInicioPrevisto').value = row?.inicio_previsto || '';
   document.getElementById('clTerminoPrevisto').value = row?.termino_previsto || '';
   document.getElementById('clStatus').value = row?.status || 'Não iniciado';
@@ -1660,21 +1665,34 @@ formChecklist.addEventListener('submit', async (e) => {
   const payload = {
     acao_detalhada: document.getElementById('clAcao').value.trim(),
     responsavel: document.getElementById('clResponsavel').value.trim() || null,
+    email_responsavel: document.getElementById('clEmail').value.trim() || null,
     inicio_previsto: document.getElementById('clInicioPrevisto').value || null,
     termino_previsto: document.getElementById('clTerminoPrevisto').value || null,
     status: document.getElementById('clStatus').value,
     observacao: document.getElementById('clObservacao').value.trim() || null,
   };
   let error;
+  let novaId = null;
   if (id){
     payload.updated_at = new Date().toISOString();
     ({ error } = await supabaseClient.from('checklist_mudanca').update(payload).eq('id', id));
   } else {
-    ({ error } = await supabaseClient.from('checklist_mudanca').insert(payload));
+    let criada;
+    ({ data: criada, error } = await supabaseClient.from('checklist_mudanca').insert(payload).select('id').single());
+    novaId = criada?.id || null;
   }
   if (error){ mostrarToast('Erro ao salvar ação: ' + error.message, true); return; }
   formChecklist.classList.add('hidden');
-  mostrarToast(id ? 'Ação atualizada.' : 'Ação adicionada.');
+  let msg = id ? 'Ação atualizada.' : 'Ação adicionada.';
+  if (novaId && payload.email_responsavel){
+    try {
+      const { data: envio, error: envioErr } = await supabaseClient.functions.invoke('notificar-checklist', { body: { tipo: 'criacao', id: novaId } });
+      msg += (envioErr || envio?.resultado !== 'enviado') ? ' Não foi possível enviar o e-mail de aviso.' : ' E-mail de aviso enviado ao responsável.';
+    } catch (_) {
+      msg += ' Não foi possível enviar o e-mail de aviso.';
+    }
+  }
+  mostrarToast(msg);
   await carregarTudo();
 });
 
