@@ -984,16 +984,22 @@ function atualizarSetasOrdenacao(){
   });
 }
 
+function separarResponsaveis(texto){
+  return (texto || '').split(/\s*(?:[\/,;]|\se\s)\s*/i).map(s => s.trim()).filter(Boolean);
+}
 function popularFiltrosChecklist(){
   const selResp = document.getElementById('filtroChecklistResponsavel');
-  const responsaveis = [...new Set(checklist.map(r => r.responsavel).filter(Boolean))];
+  const mapa = new Map();
+  checklist.forEach(r => separarResponsaveis(r.responsavel).forEach(n => { if (!mapa.has(n.toLowerCase())) mapa.set(n.toLowerCase(), n); }));
+  const responsaveis = [...mapa.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const curResp = selResp.value;
   selResp.innerHTML = '<option value="">Todos os Responsáveis</option>' + responsaveis.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
   selResp.value = responsaveis.includes(curResp) ? curResp : '';
 }
 function aplicarFiltrosChecklist(){
+  const alvo = checklistFiltro.responsavel.toLowerCase();
   return checklist.filter(r =>
-    (!checklistFiltro.responsavel || r.responsavel === checklistFiltro.responsavel) &&
+    (!alvo || separarResponsaveis(r.responsavel).some(n => n.toLowerCase() === alvo)) &&
     (!checklistFiltro.status || r.status === checklistFiltro.status)
   );
 }
