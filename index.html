@@ -369,6 +369,153 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
   .field.span-2{ grid-column: span 1; }
   .status-bar-row{ grid-template-columns: 100px 1fr 40px; }
 }
+
+/* ===================== NOVO LAYOUT (referência: Gestão de Projetos – Reforma FCO) ===================== */
+.sidebar{
+  width:236px; flex:0 0 236px;
+  background:linear-gradient(180deg,#0A3C92 0%,#06306F 48%,#042457 100%);
+  border-right:none; padding:26px 0 0; display:flex; flex-direction:column; overflow:hidden;
+}
+.sidebar > *{ position:relative; z-index:1; }
+.sidebar-brand{ border-bottom:none; margin:0 0 22px; padding:0 22px; justify-content:flex-start; }
+.sidebar-brand-logo{ height:auto; width:150px; max-width:100%; }
+.sidebar-nav{ gap:2px; }
+.tab-btn{ color:rgba(255,255,255,.86); padding:14px 22px; border-radius:0; font-size:.95rem; border-left:4px solid transparent; gap:14px; }
+.tab-btn:hover{ background:rgba(255,255,255,.07); color:#fff; }
+.tab-btn.active{ background:rgba(255,255,255,.10); color:#fff; border-left-color:#FFBA00; font-weight:700; }
+.tab-btn.active .nav-icon{ color:#FFBA00; }
+.tab-btn .nav-icon{ width:22px; height:22px; }
+.sidebar-auth{ margin:26px 18px 0; padding:12px; border-radius:10px; background:rgba(255,255,255,.08); }
+.sidebar-auth .auth-status{ color:rgba(255,255,255,.8); font-size:.76rem; margin:0 0 8px; }
+.sidebar-auth .btn{ width:100%; justify-content:center; }
+.sidebar .sidebar-swoosh{ position:absolute; left:0; bottom:0; width:100%; height:230px; z-index:0; pointer-events:none; }
+
+.main-area{ background:#F6F8FC; }
+.main-content{ padding:0 28px 60px; }
+
+.topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:22px 0 18px; flex-wrap:wrap; }
+.topbar-title{ display:flex; align-items:center; gap:16px; color:#0B3C8C; }
+.topbar-title > svg{ width:42px; height:42px; flex:none; }
+.topbar-title small{ display:block; font-size:1.05rem; color:#5B6B86; font-weight:500; line-height:1.2; }
+.topbar-title strong{ display:block; font-size:2rem; line-height:1.1; color:#0B3C8C; font-weight:800; letter-spacing:-.01em; }
+.topbar-right{ display:flex; align-items:center; gap:26px; }
+.topbar-update{ display:flex; align-items:center; gap:12px; color:#0B3C8C; }
+.topbar-update svg{ width:30px; height:30px; flex:none; }
+.topbar-update small{ display:block; font-size:.8rem; color:#5B6B86; }
+.topbar-update b{ font-size:1rem; color:#14213D; font-weight:600; }
+.topbar-user{ display:flex; align-items:center; gap:10px; border:none; background:none; cursor:pointer; font:700 .95rem var(--fonte); color:#0B3C8C; padding:0; }
+.topbar-user .avatar{ width:46px; height:46px; border-radius:50%; background:#0B3C8C; color:#fff; display:flex; align-items:center; justify-content:center; }
+.topbar-user .avatar svg{ width:24px; height:24px; }
+
+.hero{
+  position:relative; border-radius:14px; overflow:hidden; display:flex; align-items:center; gap:26px;
+  padding:34px 38px; min-height:180px; color:#fff; margin-bottom:22px;
+  background:linear-gradient(90deg,#0A2F6F 0%,#0B3C8C 40%,rgba(11,60,140,.55) 62%,rgba(11,60,140,0) 100%),
+             url(assets/banner-fco.jpg) right center / auto 100% no-repeat, #0B3C8C;
+}
+.hero-icon{ width:100px; height:100px; flex:none; border-radius:50%; background:radial-gradient(circle at 35% 30%,#2F7BE0,#0A4DB0); border:4px solid rgba(255,255,255,.28); display:flex; align-items:center; justify-content:center; }
+.hero-icon svg{ width:62px; height:62px; }
+.hero-text h2{ color:#fff; font-size:1.75rem; margin:0 0 4px; font-weight:800; }
+.hero-text p{ margin:0; color:rgba(255,255,255,.92); font-size:1.05rem; }
+.hero-bar{ display:block; width:62px; height:4px; border-radius:3px; background:#FFBA00; margin-top:14px; }
+
+.section-card{ border-radius:14px; box-shadow:0 2px 10px rgba(16,40,90,.06); border-color:#E3EAF5; }
+.info-card{ display:flex; gap:22px; align-items:flex-start; }
+.info-icon{ width:68px; height:68px; flex:none; border-radius:50%; background:#E4EEFB; color:#0B3C8C; display:flex; align-items:center; justify-content:center; }
+.info-icon svg{ width:32px; height:32px; }
+.info-icon.sm{ width:56px; height:56px; }
+.info-icon.sm svg{ width:28px; height:28px; }
+.info-body{ flex:1; min-width:0; }
+.info-body .section-header h2, .status-head h2{ color:#0B3C8C; font-size:1.35rem; font-weight:800; }
+.info-divider{ height:1px; background:#E3EAF5; margin:2px 0 16px; }
+#projetoView .kpi-card{ border:none; box-shadow:none; padding:0; background:none; }
+#projetoView .kpi-label{ font-size:.85rem; color:#7A8AA5; text-transform:uppercase; letter-spacing:.04em; font-weight:500; }
+#viewInicio{ display:flex; align-items:center; gap:10px; font-size:1.6rem !important; font-weight:700; color:#14213D; }
+#viewInicio::before{ content:""; width:26px; height:26px; flex:none; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B3C8C' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+.kpi-main{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+.kpi-main .kpi-card{ display:flex; align-items:center; gap:18px; padding:22px 24px; border-left-width:6px; border-radius:12px; min-height:150px; }
+.kpi-geral{ border-left-color:#2563EB; }
+.kpi-info{ flex:1; min-width:0; }
+.kpi-main .kpi-label{ font-size:.9rem; color:#4B5B78; font-weight:600; letter-spacing:.02em; }
+.kpi-main .kpi-value{ font-size:2.6rem; line-height:1.1; margin-top:8px; }
+.kpi-ring{ --pct:0; width:110px; height:110px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:conic-gradient(#2563EB calc(var(--pct) * 1%), #E7EDF7 0); position:relative; }
+.kpi-ring::before{ content:""; position:absolute; inset:11px; border-radius:50%; background:#fff; }
+.kpi-ring span{ position:relative; font-weight:800; color:#0B3C8C; font-size:1.05rem; }
+.kpi-icon{ width:76px; height:76px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#E6F3EC; color:#1E8C50; }
+.kpi-icon svg{ width:38px; height:38px; }
+#kpiCardDias.sem-bom .kpi-icon{ background:#E6F3EC; color:#1E8C50; }
+#kpiCardDias.sem-atencao .kpi-icon{ background:#FFF3D6; color:#9A6A00; }
+#kpiCardDias.sem-alerta .kpi-icon, #kpiCardAtraso .kpi-icon{ background:#F8E7EC; color:#A10A37; }
+.kpi-arrow{ margin-left:10px; font-size:1.7rem; color:#A10A37; font-weight:700; }
+
+.status-card{ padding:26px 30px; }
+.status-head{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:22px; }
+.status-head-text{ flex:1; min-width:220px; }
+.status-head h2{ margin:0; }
+.status-sub{ font-size:.95rem; color:#5B6B86; margin-top:2px; }
+.status-legend{ display:flex; gap:22px; flex-wrap:wrap; font-size:.85rem; color:#4B5B78; }
+.status-legend span, .status-list li{ display:flex; align-items:center; gap:8px; }
+.status-legend i, .status-list i{ width:11px; height:11px; border-radius:50%; flex:none; display:inline-block; }
+.status-body{ display:grid; grid-template-columns:200px minmax(200px,300px) 1px 1fr; align-items:center; gap:30px; }
+.status-donut{ width:190px; height:190px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; }
+.donut-center{ width:112px; height:112px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.donut-center b{ font-size:1.7rem; color:#0B3C8C; line-height:1; }
+.donut-center span{ font-size:.82rem; color:#5B6B86; margin-top:4px; }
+.status-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:20px; font-size:.98rem; color:#14213D; }
+.status-list li span{ flex:1; }
+.status-list li b{ font-size:1.1rem; color:#14213D; }
+.status-divider{ align-self:stretch; background:#E3EAF5; }
+.status-bars{ gap:20px; }
+.status-bar-row{ grid-template-columns:130px 1fr 36px; gap:14px; font-size:.92rem; color:#14213D; }
+.status-bar-track{ height:9px; border:none; background:#E9EEF6; }
+.status-bar-row .qtd{ color:#14213D; font-weight:700; }
+
+@media (max-width:1100px){
+  .status-body{ grid-template-columns:190px 1fr; }
+  .status-divider{ display:none; }
+  .status-bars{ grid-column:1 / -1; }
+}
+@media (max-width:900px){
+  .sidebar{ width:100%; flex-basis:auto; flex-direction:column; padding:12px 0 0; overflow:visible; }
+  .sidebar-brand{ margin:0 0 8px; padding:0 16px; }
+  .sidebar-brand-logo{ width:96px; }
+  .sidebar-nav{ flex-direction:row; overflow-x:auto; gap:2px; padding:0 8px; }
+  .tab-btn{ width:auto; padding:11px 14px; border-left:none; border-bottom:3px solid transparent; font-size:.86rem; flex:none; }
+  .tab-btn.active{ border-bottom-color:#FFBA00; }
+  .tab-btn .nav-icon{ width:18px; height:18px; }
+  .sidebar-auth{ margin:10px 12px 12px; }
+  .sidebar .sidebar-swoosh{ display:none; }
+  .main-content{ padding:0 14px 48px; }
+  .topbar-title strong{ font-size:1.5rem; }
+  .topbar-title > svg{ width:34px; height:34px; }
+  .kpi-main{ grid-template-columns:1fr; }
+}
+@media (max-width:640px){
+  .topbar{ padding:16px 0 12px; }
+  .topbar-right{ gap:14px; width:100%; justify-content:space-between; }
+  .hero{ padding:22px 18px; gap:14px; min-height:150px; }
+  .hero-icon{ width:68px; height:68px; }
+  .hero-icon svg{ width:42px; height:42px; }
+  .hero-text h2{ font-size:1.3rem; }
+  .hero-text p{ font-size:.9rem; }
+  .info-card{ gap:12px; padding:18px 16px; }
+  .info-icon{ width:48px; height:48px; }
+  .info-icon svg{ width:24px; height:24px; }
+  #viewInicio{ font-size:1.25rem !important; }
+  .kpi-main .kpi-card{ padding:16px; min-height:0; }
+  .kpi-main .kpi-value{ font-size:2rem; }
+  .kpi-ring{ width:86px; height:86px; }
+  .kpi-ring::before{ inset:9px; }
+  .kpi-icon{ width:56px; height:56px; }
+  .kpi-icon svg{ width:28px; height:28px; }
+  .status-card{ padding:18px 14px; }
+  .status-body{ grid-template-columns:1fr; justify-items:center; gap:20px; }
+  .status-list{ width:100%; }
+  .status-bars{ width:100%; }
+  .status-bar-row{ grid-template-columns:96px 1fr 30px; }
+}
 </style>
 </head>
 <body>
@@ -378,11 +525,7 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
   <!-- BARRA LATERAL -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img class="sidebar-brand-logo" src="data:image/png;base64,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" alt="Logo FCO">
-      <div class="sidebar-brand-text">
-        Painel de Obra
-        <small>Reforma Nova Unidade</small>
-      </div>
+      <img class="sidebar-brand-logo" src="assets/logo-fco.png" alt="FCO – Faculdade de Ciências Odontológicas">
     </div>
 
     <!-- NAVEGAÇÃO -->
@@ -412,26 +555,56 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
         <span id="btnLoginTexto">Entrar para editar</span>
       </button>
     </div>
+    <svg class="sidebar-swoosh" viewBox="0 0 250 300" preserveAspectRatio="none" aria-hidden="true">
+      <polygon points="0,70 250,160 250,200 0,118" fill="#F7B500"/>
+      <polygon points="0,118 250,200 250,300 0,300" fill="#C8102E"/>
+      <polygon points="0,170 250,235 250,300 0,300" fill="#8E0B33"/>
+      <polygon points="0,232 250,268 250,300 0,300" fill="#5E0A2A"/>
+    </svg>
   </aside>
 
   <!-- ÁREA PRINCIPAL -->
   <div class="main-area">
   <div class="main-content">
-  </nav>
+    <header class="topbar">
+      <div class="topbar-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 11h6M9 15h6"/></svg>
+        <div><small>Gestão de Projetos</small><strong>Reforma – FCO</strong></div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-update">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <div><small>Última atualização</small><b id="topUpdate">—</b></div>
+        </div>
+        <button class="topbar-user" id="topUser" type="button" title="Entrar para editar / sair do modo edição">
+          <span class="avatar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0z"/></svg></span>
+          <span id="topUserText">Visualização</span>
+        </button>
+      </div>
+    </header>
 
   <!-- ===================== ABA: PAINEL (Dashboard) ===================== -->
   <div class="tab-panel active" id="tab-painel">
-    <div class="page-header">
-      <h1>Painel</h1>
-      <p>Visão geral do andamento da obra</p>
-    </div>
+    <section class="hero">
+      <div class="hero-icon">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 43c0-14 9-24 22-24s22 10 22 24z" fill="#FFB800"/><rect x="27" y="13" width="10" height="30" rx="4" fill="#FFD25A"/><path d="M4 43h56v5a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="#F29A00"/><path d="M16 38c1.5-6 5-10 9-12" stroke="#FFE9A8" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="hero-text">
+        <h2>Projeto de Reforma</h2>
+        <p>Mais infraestrutura para o futuro da FCO.</p>
+        <span class="hero-bar"></span>
+      </div>
+    </section>
 
     <!-- INFORMAÇÕES DO PROJETO -->
-    <div class="section-card">
+    <div class="section-card info-card">
+      <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div>
+      <div class="info-body">
       <div class="section-header">
         <h2>Informações do Projeto</h2>
         <button class="btn btn-secondary btn-sm so-edicao" id="btnEditarProjeto">Editar informações</button>
       </div>
+      <div class="info-divider"></div>
       <div class="kpi-grid" style="margin-bottom:0;" id="projetoView">
         <div class="kpi-card">
           <div class="kpi-label">Data de Início</div>
@@ -471,29 +644,51 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
           <button type="button" class="btn btn-secondary" id="btnCancelarProjeto">Cancelar</button>
         </div>
       </form>
+      </div>
     </div>
 
     <!-- INDICADORES GERAIS -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">% Concluído (Geral)</div>
-        <div class="kpi-value" id="kpiPctGeral">0,0%</div>
-        <div class="progress-track"><div class="progress-fill" id="kpiPctGeralBar" style="width:0%;"></div></div>
+    <div class="kpi-grid kpi-main">
+      <div class="kpi-card kpi-geral">
+        <div class="kpi-ring" id="kpiRing" style="--pct:0"><span id="kpiRingTxt">0,0%</span></div>
+        <div class="kpi-info">
+          <div class="kpi-label">% Concluído (Geral)</div>
+          <div class="kpi-value" id="kpiPctGeral">0,0%</div>
+          <div class="progress-track"><div class="progress-fill" id="kpiPctGeralBar" style="width:0%;"></div></div>
+        </div>
       </div>
       <div class="kpi-card" id="kpiCardDias">
-        <div class="kpi-label">Dias Restantes p/ Prazo Final</div>
-        <div class="kpi-value" id="kpiDiasRestantes">—</div>
+        <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div>
+        <div class="kpi-info">
+          <div class="kpi-label">Dias restantes p/ prazo final</div>
+          <div class="kpi-value" id="kpiDiasRestantes">—</div>
+        </div>
       </div>
       <div class="kpi-card" id="kpiCardAtraso">
-        <div class="kpi-label">Atividades em Atraso</div>
-        <div class="kpi-value" id="kpiAtividadesAtraso">0</div>
+        <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0z"/><path d="M15 14.2a5.5 5.5 0 0 1 6.5 5.8H17.6a8 8 0 0 0-2.6-5.8z"/></svg></div>
+        <div class="kpi-info">
+          <div class="kpi-label">Atividades em atraso</div>
+          <div class="kpi-value alerta"><span id="kpiAtividadesAtraso">0</span><span class="kpi-arrow" id="kpiArrow" hidden>↗</span></div>
+        </div>
       </div>
     </div>
 
     <!-- STATUS DAS ATIVIDADES -->
-    <div class="section-card">
-      <h2 id="statusTitulo">Status das Atividades (Cronograma)</h2>
-      <div class="status-bars" id="statusBars"></div>
+    <div class="section-card status-card">
+      <div class="status-head">
+        <div class="info-icon sm"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="6" width="4" height="14" rx="1"/><rect x="16" y="9" width="4" height="11" rx="1"/></svg></div>
+        <div class="status-head-text">
+          <h2 id="statusTitulo">Status das Atividades (Cronograma)</h2>
+          <div class="status-sub" id="statusSub">—</div>
+        </div>
+        <div class="status-legend" id="statusLegend"></div>
+      </div>
+      <div class="status-body">
+        <div class="status-donut" id="statusDonut"><div class="donut-center"><b id="donutTotal">0</b><span>atividades</span></div></div>
+        <ul class="status-list" id="statusList"></ul>
+        <div class="status-divider"></div>
+        <div class="status-bars" id="statusBars"></div>
+      </div>
     </div>
 
     <!-- RESUMO POR ETAPA -->
@@ -1080,15 +1275,20 @@ function renderPainel(){
 
   document.getElementById('kpiPctGeral').textContent = formatPercent(ind.pctGeral);
   document.getElementById('kpiPctGeralBar').style.width = (ind.pctGeral*100) + '%';
+  document.getElementById('kpiRing').style.setProperty('--pct', (ind.pctGeral*100).toFixed(1));
+  document.getElementById('kpiRingTxt').textContent = formatPercent(ind.pctGeral);
+  document.getElementById('kpiArrow').hidden = !(ind.statusCounts['Atrasado'] > 0);
   document.getElementById('kpiDiasRestantes').textContent = ind.diasRestantes === null ? '—' : ind.diasRestantes;
   document.getElementById('kpiAtividadesAtraso').textContent = ind.statusCounts['Atrasado'];
 
   aplicarSemaforo('kpiDiasRestantes', 'kpiCardDias',
     ind.diasRestantes === null ? '' : (ind.diasRestantes < 0 ? 'alerta' : (ind.diasRestantes <= 7 ? 'atencao' : 'bom')));
   aplicarSemaforo('kpiAtividadesAtraso', 'kpiCardAtraso', 'alerta');
+  document.getElementById('kpiAtividadesAtraso').parentElement.classList.add('alerta');
 
   const total = ind.linhas.length;
-  document.getElementById('statusTitulo').textContent = `Status das Atividades (Cronograma) — ${total} no total`;
+  document.getElementById('statusSub').textContent = `${total} no total`;
+  document.getElementById('donutTotal').textContent = total;
   const ordem = ['Concluído','Em andamento','Atrasado','Não iniciado'];
   const statusBars = document.getElementById('statusBars');
   statusBars.innerHTML = '';
@@ -1105,6 +1305,20 @@ function renderPainel(){
     `;
     statusBars.appendChild(row);
   });
+
+  // rosca, lista e legenda (mesmos números das barras)
+  let acc = 0;
+  const fatias = ordem.map(status => {
+    const qtd = ind.statusCounts[status], pct = total ? qtd/total*100 : 0;
+    const ini = acc; acc += pct;
+    return `${STATUS_INFO[status][1]} ${ini.toFixed(2)}% ${acc.toFixed(2)}%`;
+  });
+  document.getElementById('statusDonut').style.background = total
+    ? `conic-gradient(${fatias.join(', ')})` : '#E5E7EB';
+  document.getElementById('statusList').innerHTML = ordem.map(status =>
+    `<li><i style="background:${STATUS_INFO[status][1]}"></i><span>${status}</span><b>${ind.statusCounts[status]}</b></li>`).join('');
+  document.getElementById('statusLegend').innerHTML = ordem.map(status =>
+    `<span><i style="background:${STATUS_INFO[status][1]}"></i>${status}</span>`).join('');
 
   const corpoResumo = document.getElementById('corpoResumoEtapa');
   corpoResumo.innerHTML = '';
@@ -1351,11 +1565,14 @@ function aplicarModoEdicao(session){
   const ativo = !!session && session.user?.email === EDITOR_EMAIL;
   document.body.classList.toggle('modo-edicao', ativo);
   document.getElementById('authStatus').textContent = ativo ? 'Modo edição ativo' : 'Modo somente visualização';
+  document.getElementById('topUserText').textContent = ativo ? 'Editor' : 'Visualização';
   document.getElementById('btnLoginTexto').textContent = ativo ? 'Sair do modo edição' : 'Entrar para editar';
   if (!ativo){
     ['formProjeto','formCronograma','formChecklist'].forEach(id => document.getElementById(id).classList.add('hidden'));
   }
 }
+document.getElementById('topUpdate').textContent = new Date().toLocaleDateString('pt-BR');
+document.getElementById('topUser').addEventListener('click', () => document.getElementById('btnLogin').click());
 supabaseClient.auth.getSession().then(({ data }) => aplicarModoEdicao(data.session));
 supabaseClient.auth.onAuthStateChange((_evento, session) => aplicarModoEdicao(session));
 
