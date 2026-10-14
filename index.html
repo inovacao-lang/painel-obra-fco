@@ -986,6 +986,10 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
             <option value="Concluído">Concluído</option>
           </select>
         </div>
+        <div class="field grow">
+          <label for="checklistBusca">Buscar</label>
+          <input type="text" id="checklistBusca" placeholder="Buscar em ação detalhada...">
+        </div>
       </div>
 
       <div class="table-wrap">
@@ -1056,7 +1060,7 @@ let diario = [];
 let checklist = [];
 let cronoSort = { key: 'ordem', dir: 'asc' };
 let cronoFiltro = { etapa: '', responsavel: '', status: '', busca: '' };
-let checklistFiltro = { responsavel: '', status: '' };
+let checklistFiltro = { responsavel: '', status: '', busca: '' };
 
 /* ============================== UTILITÁRIOS ============================== */
 function esc(str){
@@ -1227,9 +1231,12 @@ function popularFiltrosChecklist(){
 }
 function aplicarFiltrosChecklist(){
   const alvo = checklistFiltro.responsavel.toLowerCase();
+  const semAcento = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const busca = semAcento(checklistFiltro.busca.trim());
   return checklist.filter(r =>
     (!alvo || separarResponsaveis(r.responsavel).some(n => n.toLowerCase() === alvo)) &&
-    (!checklistFiltro.status || r.status === checklistFiltro.status)
+    (!checklistFiltro.status || r.status === checklistFiltro.status) &&
+    (!busca || semAcento(r.acao_detalhada).includes(busca))
   );
 }
 
@@ -1493,7 +1500,7 @@ function renderChecklist(){
   const filtrados = aplicarFiltrosChecklist();
   corpo.innerHTML = '';
   if (!filtrados.length){
-    corpo.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma ação cadastrada ainda.</td></tr>`;
+    corpo.innerHTML = `<tr><td colspan="7" class="empty-state">${checklist.length ? 'Nenhuma ação encontrada com os filtros atuais.' : 'Nenhuma ação cadastrada ainda.'}</td></tr>`;
     return;
   }
   const hoje = hojeISO();
@@ -2017,6 +2024,7 @@ document.getElementById('corpoChecklist').addEventListener('click', async (e) =>
 
 document.getElementById('filtroChecklistResponsavel').addEventListener('change', (e) => { checklistFiltro.responsavel = e.target.value; renderChecklist(); });
 document.getElementById('filtroChecklistStatus').addEventListener('change', (e) => { checklistFiltro.status = e.target.value; renderChecklist(); });
+document.getElementById('checklistBusca').addEventListener('input', (e) => { checklistFiltro.busca = e.target.value; renderChecklist(); });
 
 /* ================================== INIT ================================== */
 document.getElementById('dData').valueAsDate = new Date();
