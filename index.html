@@ -276,6 +276,10 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
 .login-box h2{ margin:0 0 4px; font-size:1.1rem; }
 .login-box p{ margin:0 0 14px; color:var(--cinza-texto); font-size:0.86rem; }
 .login-box input{ width:100%; padding:10px 12px; border:1px solid var(--cinza-borda); border-radius:8px; font-size:0.95rem; font-family:var(--fonte); }
+.login-box.hidden{ display:none; }
+.login-box textarea{ width:100%; padding:10px 12px; border:1px solid var(--cinza-borda); border-radius:8px; font-size:0.95rem; font-family:var(--fonte); resize:vertical; }
+.login-campos{ display:flex; flex-direction:column; gap:10px; }
+.login-link{ display:block; margin:14px auto 0; background:none; border:none; color:var(--azul-vivo); font-size:0.84rem; font-weight:600; cursor:pointer; font-family:var(--fonte); text-decoration:underline; }
 .login-erro{ color:var(--vinho); font-size:0.82rem; margin:8px 0 0; min-height:1.1em; }
 .btn-sm{ padding:6px 12px; font-size:0.76rem; }
 .btn:disabled{ opacity:0.6; cursor:not-allowed; }
@@ -1045,6 +1049,21 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
       <button type="submit" class="btn btn-primary" id="btnLoginEnviar">Entrar</button>
       <button type="button" class="btn btn-secondary" id="btnLoginCancelar">Cancelar</button>
     </div>
+    <button type="button" class="login-link" id="btnAbrirSolicitacao">Não sei a senha — solicitar acesso</button>
+  </form>
+  <form class="login-box hidden" id="formSolicitacao">
+    <h2>Solicitar acesso de edição</h2>
+    <p>Informe seus dados. O pedido será enviado à equipe de Inovação, que responderá por e-mail.</p>
+    <div class="login-campos">
+      <input type="text" id="solNome" placeholder="Seu nome" maxlength="100" required>
+      <input type="email" id="solEmail" placeholder="Seu e-mail" maxlength="150" required>
+      <textarea id="solMotivo" placeholder="Por que precisa editar? (opcional)" maxlength="500" rows="3"></textarea>
+    </div>
+    <div class="login-erro" id="solErro"></div>
+    <div class="actions-row">
+      <button type="submit" class="btn btn-primary" id="btnSolEnviar">Enviar solicitação</button>
+      <button type="button" class="btn btn-secondary" id="btnSolVoltar">Voltar</button>
+    </div>
   </form>
 </div>
 <div class="toast" id="toast"></div>
@@ -1626,11 +1645,51 @@ supabaseClient.auth.getSession().then(({ data }) => aplicarModoEdicao(data.sessi
 supabaseClient.auth.onAuthStateChange((_evento, session) => aplicarModoEdicao(session));
 
 const loginOverlay = document.getElementById('loginOverlay');
+function mostrarFormLogin(solicitacao){
+  document.getElementById('formLogin').classList.toggle('hidden', solicitacao);
+  document.getElementById('formSolicitacao').classList.toggle('hidden', !solicitacao);
+}
 function fecharLogin(){
   loginOverlay.classList.add('hidden');
   document.getElementById('loginSenha').value = '';
   document.getElementById('loginErro').textContent = '';
+  document.getElementById('solErro').textContent = '';
+  mostrarFormLogin(false);
 }
+document.getElementById('btnAbrirSolicitacao').addEventListener('click', () => {
+  mostrarFormLogin(true);
+  document.getElementById('solNome').focus();
+});
+document.getElementById('btnSolVoltar').addEventListener('click', () => mostrarFormLogin(false));
+document.getElementById('formSolicitacao').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnSolEnviar');
+  const erro = document.getElementById('solErro');
+  erro.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  let falha = null;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('solicitar-acesso', {
+      body: {
+        nome: document.getElementById('solNome').value,
+        email: document.getElementById('solEmail').value,
+        motivo: document.getElementById('solMotivo').value,
+      },
+    });
+    if (error || !data?.ok){
+      falha = data?.erro || (error && await error.context?.json?.().then(j => j.erro).catch(() => null)) || 'Não foi possível enviar agora. Tente novamente.';
+    }
+  } catch (_){
+    falha = 'Não foi possível enviar agora. Tente novamente.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Enviar solicitação';
+  if (falha){ erro.textContent = falha; return; }
+  e.target.reset();
+  fecharLogin();
+  mostrarToast('Solicitação enviada. A equipe de Inovação responderá por e-mail.');
+});
 document.getElementById('btnLogin').addEventListener('click', async () => {
   if (document.body.classList.contains('modo-edicao')){
     await supabaseClient.auth.signOut();
