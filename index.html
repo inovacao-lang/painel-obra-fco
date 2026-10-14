@@ -161,6 +161,11 @@ h1,h2,h3{ color: var(--texto-forte); margin:0 0 4px; letter-spacing:-0.01em; }
 
 /* ============================ STATUS BARRAS =============================== */
 .status-bars{ display:flex; flex-direction:column; gap:10px; }
+.cl-resumo{ display:flex; align-items:baseline; gap:12px; margin:6px 0 16px; flex-wrap:wrap; }
+.cl-resumo-pct{ font-size:2.2rem; font-weight:800; color:#1E8C50; line-height:1; }
+.cl-resumo-txt{ color:var(--cinza-texto); font-size:0.92rem; }
+#clStatusBars .status-bar-row{ grid-template-columns:130px 1fr 110px; }
+@media (max-width:640px){ #clStatusBars .status-bar-row{ grid-template-columns:96px 1fr 84px; } }
 .status-bar-row{ display:grid; grid-template-columns: 140px 1fr 60px; align-items:center; gap:12px; font-size:0.88rem; }
 .status-bar-track{ background: var(--creme); border:1px solid var(--cinza-borda); border-radius:999px; height:14px; overflow:hidden; }
 .status-bar-fill{ height:100%; border-radius:999px; transition: width .4s ease; }
@@ -922,6 +927,16 @@ body:not(.modo-edicao) th.col-acoes{ display:none !important; }
       <h1>Check-list Mudança</h1>
       <p>Ações, prazos e responsáveis para a mudança de unidade</p>
     </div>
+
+    <div class="section-card">
+      <h2>Conclusão Geral das Ações</h2>
+      <div class="cl-resumo">
+        <div class="cl-resumo-pct" id="clPctGeral">0%</div>
+        <div class="cl-resumo-txt" id="clPctTexto">0 de 0 ações concluídas</div>
+      </div>
+      <div class="status-bars" id="clStatusBars"></div>
+    </div>
+
     <div class="section-card">
       <div class="section-header">
         <h2>Check-list Mudança</h2>
@@ -1494,7 +1509,37 @@ function renderDiario(){
   });
 }
 
+const CHECKLIST_STATUS_CORES = {
+  'Concluído': '#1E8C50', 'Em andamento': '#2563EB', 'Pendente': '#A10A37', 'Não iniciado': '#9CA3AF',
+};
+function renderResumoChecklist(){
+  const total = checklist.length;
+  const contagem = {};
+  Object.keys(CHECKLIST_STATUS_CORES).forEach(s => { contagem[s] = 0; });
+  checklist.forEach(r => { if (contagem.hasOwnProperty(r.status)) contagem[r.status]++; });
+  const concluidas = contagem['Concluído'];
+  const pctGeral = total ? (concluidas / total) * 100 : 0;
+  document.getElementById('clPctGeral').textContent = formatPercent(pctGeral / 100);
+  document.getElementById('clPctTexto').textContent = `${concluidas} de ${total} ações concluídas`;
+  const barras = document.getElementById('clStatusBars');
+  barras.innerHTML = '';
+  Object.keys(CHECKLIST_STATUS_CORES).forEach(rotulo => {
+    const qtd = contagem[rotulo];
+    const cor = CHECKLIST_STATUS_CORES[rotulo];
+    const pct = total ? (qtd / total) * 100 : 0;
+    const row = document.createElement('div');
+    row.className = 'status-bar-row';
+    row.innerHTML = `
+      <span>${esc(rotulo)}</span>
+      <div class="status-bar-track"><div class="status-bar-fill" style="width:${pct}%; background:${cor};"></div></div>
+      <span class="qtd">${qtd} (${formatPercent(pct / 100)})</span>
+    `;
+    barras.appendChild(row);
+  });
+}
+
 function renderChecklist(){
+  renderResumoChecklist();
   popularFiltrosChecklist();
   const corpo = document.getElementById('corpoChecklist');
   const filtrados = aplicarFiltrosChecklist();
